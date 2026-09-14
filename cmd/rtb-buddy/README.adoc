@@ -1,0 +1,131 @@
+= rtb-buddy
+
+Multipurpose helper tool for the RtBrick fullstack.
+
+== Installation
+
+=== From Source
+
+.Requires Go 1.27+
+[source,sh]
+----
+git clone https://github.com/rtbrick/tools.git
+cd tools
+make build
+----
+
+The binary `rtb-buddy` is placed in the project root.
+
+=== Go Install
+
+[source,sh]
+----
+go install github.com/rtbrick/tools/cmd/rtb-buddy@latest
+----
+
+The binary is placed in `$(go env GOPATH)/bin`.
+
+== Usage
+
+[source,sh]
+----
+# Generate key pair
+rtb-buddy apigw generate jwks
+
+# Issue a token
+rtb-buddy apigw generate token --sub alice --name Alice --preferred-username alice --scope supervisor
+
+# Verify a token
+echo "<token>" | rtb-buddy apigw inspect token
+----
+
+== Shell Completion
+
+[source,sh]
+----
+# zsh (current session)
+source <(rtb-buddy completion zsh)
+
+# zsh (persistent - Linux)
+rtb-buddy completion zsh > "${fpath[1]}/_rtb-buddy"
+
+# zsh (persistent - macOS)
+rtb-buddy completion zsh > "$(brew --prefix)/share/zsh/site-functions/_rtb-buddy"
+
+# bash
+source <(rtb-buddy completion bash)
+----
+
+== Commands
+
+=== apigw generate jwks
+
+Generate an RSA key pair as two JWKS files.
+
+* `--priv` — output path for the private JWKS (default: `apigw-jwks-priv.json`)
+* `--pub` — output path for the public JWKS (default: `apigw-jwks.json`)
+* `--kid` — key ID for the JWKS entries (default: `access`)
+
+The private JWKS contains two entries (private key + public key, same KID).
+The public JWKS contains one entry (public key only, for distribution).
+
+[source,sh]
+----
+rtb-buddy apigw generate jwks
+rtb-buddy apigw generate jwks --kid "prod" --priv prod-jwks-priv.json --pub prod-jwks.json
+----
+
+=== apigw generate token
+
+Generate a signed JWT. The private key is read from the JWKS file.
+
+* `--priv` — private JWKS file path (default: `apigw-jwks-priv.json`)
+* `--kid` — key ID to select from the JWKS (empty = first key)
+* `--override-kid` — override the kid in the JWT header (default: use the JWKS entry's kid)
+* `--sub` — token subject (required)
+* `--name` — name claim (required)
+* `--preferred-username` — preferred username claim (required)
+* `--scope` — scope claim (default: `user`)
+* `--iss` — issuer (default: `rtbrick`)
+* `--dur` — token duration (default: `1h`)
+[source,sh]
+----
+# Single key in JWKS — --kid not needed
+rtb-buddy apigw generate token \
+  --sub 1234567890 \
+  --name rtbrick \
+  --preferred-username rtbrick \
+  --scope supervisor
+
+# Multiple keys — select by KID
+rtb-buddy apigw generate token \
+  --kid "prod" \
+  --sub 1234567890 \
+  --name rtbrick \
+  --preferred-username rtbrick
+
+# Override the kid in the JWT header
+rtb-buddy apigw generate token \
+  --kid "access" \
+  --override-kid "rotated" \
+  --sub 1234567890 \
+  --name rtbrick \
+  --preferred-username rtbrick
+----
+
+=== apigw inspect token
+
+Decode a JWT from stdin. Verify signature if public JWKS is available. Reports expiration status.
+
+* `--pub` — public JWKS file path (default: `apigw-jwks.json`)
+* `--override-kid` — override the kid for key lookup in the JWKS
+[source,sh]
+----
+# Verify with matching kid
+rtb-buddy apigw generate token --kid access --sub 123 --name admin --preferred-username admin \
+  | rtb-buddy apigw inspect token
+
+# Override kid for key lookup (e.g. token has kid "test", JWKS has kid "access")
+rtb-buddy apigw generate token --kid access --override-kid test --sub 123 --name admin --preferred-username admin \
+  | rtb-buddy apigw inspect token --override-kid access
+----
