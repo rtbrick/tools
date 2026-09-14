@@ -17,9 +17,13 @@ image:https://img.shields.io/badge/module-github.com%2Frtbrick%2Ftools-green.svg
 
 == Tools
 
-| Tool | Description |
-|------|-------------|
-| `rtb-buddy` | Multipurpose helper tool for the RtBrick fullstack. See link:cmd/rtb-buddy/README.adoc[documentation]. |
+|===
+| Tool | Description
+
+| `rtb-buddy`
+| Multipurpose helper tool for the RtBrick fullstack. See link:cmd/rtb-buddy/README.adoc[documentation].
+
+|===
 
 == Development
 
