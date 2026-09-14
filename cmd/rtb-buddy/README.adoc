@@ -58,7 +58,11 @@ source <(rtb-buddy completion bash)
 
 == Commands
 
-=== apigw generate jwks
+=== apigwd
+
+APIGWD relevant commands.
+
+==== apigw generate jwks
 
 Generate an RSA key pair as two JWKS files.
 
@@ -113,7 +117,7 @@ rtb-buddy apigw generate token \
   --preferred-username rtbrick
 ----
 
-=== apigw inspect token
+==== apigw inspect token
 
 Decode a JWT from stdin. Verify signature if public JWKS is available. Reports expiration status.
 
