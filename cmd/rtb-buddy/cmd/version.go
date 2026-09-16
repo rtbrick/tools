@@ -14,14 +14,14 @@ func newVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print version and build metadata",
 		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Printf("Version:   %s\n", config.VERSION)
 			fmt.Printf("Go:        %s\n", runtime.Version())
 			fmt.Printf("Platform:  %s/%s\n", runtime.GOOS, runtime.GOARCH)
 
 			info, ok := debug.ReadBuildInfo()
 			if !ok {
-				return
+				return nil
 			}
 
 			for _, s := range info.Settings {
@@ -38,6 +38,7 @@ func newVersionCmd() *cobra.Command {
 					fmt.Printf("Modified:  %s\n", s.Value)
 				}
 			}
+			return nil
 		},
 	}
 }

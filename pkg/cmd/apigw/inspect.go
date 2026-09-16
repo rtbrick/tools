@@ -8,9 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rtbrick/tools/pkg/generator"
 	"github.com/spf13/cobra"
-
-	"github.com/rtbrick/tools/cmd/rtb-buddy/cmd/utils"
 )
 
 func NewInspectCmd() *cobra.Command {
@@ -28,16 +27,14 @@ func newInspectTokenCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "token",
 		Short: "Decode and verify a JWT from stdin",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := io.ReadAll(os.Stdin)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error reading stdin: %v\n", err)
-				os.Exit(1)
+				return fmt.Errorf("error reading stdin: %w", err)
 			}
 			raw := strings.TrimSpace(string(data))
 			if raw == "" {
-				fmt.Fprintf(os.Stderr, "error: no token provided on stdin\n")
-				os.Exit(1)
+				return fmt.Errorf("no token provided on stdin")
 			}
 
 			pubAvailable := pubPath != ""
@@ -52,10 +49,9 @@ func newInspectTokenCmd() *cobra.Command {
 				checkPath = ""
 			}
 
-			header, claims, valid, err := utils.InspectToken(raw, checkPath, overrideKid)
+			header, claims, valid, err := generator.InspectToken(raw, checkPath, overrideKid)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
+				return err
 			}
 
 			fmt.Println("Header:")
@@ -85,6 +81,7 @@ func newInspectTokenCmd() *cobra.Command {
 					}
 				}
 			}
+			return nil
 		},
 	}
 

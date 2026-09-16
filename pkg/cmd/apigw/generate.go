@@ -2,21 +2,20 @@ package apigw
 
 import (
 	"fmt"
-	"os"
 	"time"
 
+	"github.com/rtbrick/tools/pkg/generator"
 	"github.com/spf13/cobra"
-
-	"github.com/rtbrick/tools/cmd/rtb-buddy/cmd/utils"
 )
 
 func NewGenerateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate JWKS files and Token",
+		Short: "Generate JWKS files, Token, and TLS certificates",
 	}
 	cmd.AddCommand(newJWKSCmd())
 	cmd.AddCommand(newTokenCmd())
+	cmd.AddCommand(newTLSCertCmd())
 	return cmd
 }
 
@@ -26,13 +25,13 @@ func newJWKSCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "jwks",
 		Short: "Generate an RSA key pair and JWKS files",
-		Run: func(cmd *cobra.Command, args []string) {
-			if err := utils.GenerateJWKS(privPath, pubPath, kid); err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := generator.GenerateJWKS(privPath, pubPath, kid); err != nil {
+				return err
 			}
 			fmt.Printf("Private JWKS written to %s\n", privPath)
 			fmt.Printf("Public JWKS written to %s\n", pubPath)
+			return nil
 		},
 	}
 
@@ -50,13 +49,13 @@ func newTokenCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "token",
 		Short: "Generate a signed JWT token",
-		Run: func(cmd *cobra.Command, args []string) {
-			token, err := utils.GenerateToken(privPath, sub, name, preferredUser, scope, iss, kid, overrideKid, dur)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			token, err := generator.GenerateToken(privPath, sub, name, preferredUser, scope, iss, kid, overrideKid, dur)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "error: %v\n", err)
-				os.Exit(1)
+				return err
 			}
 			fmt.Println(token)
+			return nil
 		},
 	}
 
@@ -77,6 +76,35 @@ func newTokenCmd() *cobra.Command {
 		panic(err)
 	}
 	if err := cmd.MarkFlagRequired(flagPreferredUser); err != nil {
+		panic(err)
+	}
+
+	return cmd
+}
+
+func newTLSCertCmd() *cobra.Command {
+	var certPath, keyPath, org string
+	var hosts []string
+
+	cmd := &cobra.Command{
+		Use:   "tls",
+		Short: "Generate a self-signed TLS certificate and key",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := generator.GenerateTLSCertificate(certPath, keyPath, org, hosts); err != nil {
+				return err
+			}
+			fmt.Printf("TLS certificate written to %s\n", certPath)
+			fmt.Printf("TLS key written to %s\n", keyPath)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&certPath, flagCert, "server.crt", "Output path for the TLS certificate PEM")
+	cmd.Flags().StringVar(&keyPath, flagKey, "server.key", "Output path for the TLS key PEM")
+	cmd.Flags().StringVar(&org, flagOrg, "", "Organization name for the certificate")
+	cmd.Flags().StringSliceVar(&hosts, flagHost, []string{"localhost"}, "Hostnames/IPs to include in the certificate SANs")
+
+	if err := cmd.MarkFlagRequired(flagOrg); err != nil {
 		panic(err)
 	}
 

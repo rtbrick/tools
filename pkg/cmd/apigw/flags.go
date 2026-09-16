@@ -13,6 +13,10 @@ const (
 	flagScope         = "scope"
 	flagIss           = "iss"
 	flagDur           = "dur"
+	flagCert          = "cert"
+	flagKey           = "key"
+	flagOrg           = "org"
+	flagHost          = "host"
 
 	defaultKid      = "access"
 	defaultIssuer   = "rtbrick"

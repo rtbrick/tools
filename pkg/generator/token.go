@@ -1,4 +1,4 @@
-package utils
+package generator
 
 import (
 	"crypto/rsa"
@@ -87,10 +87,12 @@ func GenerateToken(privPath, sub, name, preferredUser, scope, iss, selectKid, ov
 		Name:          name,
 		PreferredUser: preferredUser,
 		Scope:         scope,
-		Subject:       sub,
-		Issuer:        iss,
-		IssuedAt:      jwt.NewNumericDate(now),
-		ExpiresAt:     jwt.NewNumericDate(now.Add(dur)),
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   sub,
+			Issuer:    iss,
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(dur)),
+		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)

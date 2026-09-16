@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/rtbrick/tools/cmd/rtb-buddy/cmd/apigw"
 	"github.com/rtbrick/tools/cmd/rtb-buddy/config"
+	"github.com/rtbrick/tools/pkg/cmd/apigw"
 	"github.com/spf13/cobra"
 )
 
