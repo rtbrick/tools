@@ -117,6 +117,13 @@ rtb-buddy apigw generate token \
   --preferred-username rtbrick
 ----
 
+==== apigw generate tls
+
+[source,sh]
+----
+rtb-buddy apigw generate tls --org "rtbrick"
+----
+
 ==== apigw inspect token
 
 Decode a JWT from stdin. Verify signature if public JWKS is available. Reports expiration status.
@@ -132,4 +139,104 @@ rtb-buddy apigw generate token --kid access --sub 123 --name admin --preferred-u
 # Override kid for key lookup (e.g. token has kid "test", JWKS has kid "access")
 rtb-buddy apigw generate token --kid access --override-kid test --sub 123 --name admin --preferred-username admin \
   | rtb-buddy apigw inspect token --override-kid access
+----
+
+=== lix1
+
+LI X1 mTLS certificate management commands for Lawful Intercept.
+
+==== mTLS Setup
+
+LI X1 uses mutual TLS (mTLS) between ADMF (Administrative Function / management system) and RBFS (network device).
+
+CA:: Trust anchor — issues certificates for all components
+RBFS:: Server — presents certificate, verifies ADMF clients
+ADMF:: Client — presents certificate, verifies RBFS server
+
+===== Generate certificates
+
+[source,sh]
+----
+# 1. Generate CA
+rtb-buddy lix1 generate ca --cn "LI X1 CA" --org "RtBrick" --ou "Engineering"
+
+# 2. Generate RBFS certificate (server)
+rtb-buddy lix1 generate cert --cn "rbfs-router-01" --org "RtBrick" --ou "Engineering" --crt rbfs.crt --crt-key rbfs.key
+
+# 3. Generate ADMF certificate (client)
+rtb-buddy lix1 generate cert --cn "admf-prod" --org "RtBrick" --ou "Engineering" --crt admf.crt --crt-key admf.key
+----
+
+===== Deploy
+
+* **RBFS**: `rbfs.crt` + `rbfs.key` + `ca.crt`
+* **ADMF**: `admf.crt` + `admf.key` + `ca.crt`
+
+Both sides need `ca.crt` to verify each other's certificates.
+
+==== lix1 generate ca
+
+Generate a root CA certificate and private key.
+
+* `--ca-crt` — CA certificate output path (default: `ca.crt`)
+* `--ca-crt-key` — CA private key output path (default: `ca.key`)
+* `--cn` — Common Name (required)
+* `--org` — Organization (required)
+* `--ou` — Organizational Unit (required)
+* `--duration` — Certificate validity duration (default: `87600h` / 10 years)
+
+[source,sh]
+----
+rtb-buddy lix1 generate ca --cn "RtBrick LIX1" --org "RtBrick" --ou "Engineering"
+rtb-buddy lix1 generate ca --cn "My CA" --org "My Org" --ou "Eng" --ca-crt my-ca.crt --ca-crt-key my-ca.key
+----
+
+==== lix1 generate cert
+
+Generate a certificate signed by the CA.
+
+* `--ca-crt` — CA certificate input path (default: `ca.crt`)
+* `--ca-crt-key` — CA private key input path (default: `ca.key`)
+* `--crt` — Certificate output path (required)
+* `--crt-key` — Private key output path (required)
+* `--cn` — Common Name (required)
+* `--org` — Organization (required)
+* `--ou` — Organizational Unit (required)
+* `--duration` — Certificate validity duration (default: `87600h` / 10 years)
+
+[source,sh]
+----
+rtb-buddy lix1 generate cert --cn "Test Device 1" --org "RtBrick" --ou "Testing" --crt device_test_1.crt --crt-key device_test_1.key
+rtb-buddy lix1 generate cert --cn "ADMF" --org "RtBrick" --ou "Engineering" --crt admf.crt --crt-key admf.key
+rtb-buddy lix1 generate cert --cn "RBFS" --org "RtBrick" --ou "Engineering" --crt rbfs.crt --crt-key rbfs.key
+----
+
+==== lix1 test cert
+
+Test certificate validity and chain verification.
+
+* `--crt` — Certificate to test (required)
+* `--ca-crt` — CA certificate for chain validation (default: `ca.crt`)
+
+[source,sh]
+----
+rtb-buddy lix1 test cert --crt device_test_1.crt
+rtb-buddy lix1 test cert --crt admf.crt --ca-crt ca.crt
+----
+
+.Example output:
+[source]
+----
+Subject: CN=Test Device 1,OU=Testing,O=RtBrick
+Issuer: CN=RtBrick LIX1,OU=Engineering,O=RtBrick
+Serial: 1658
+Signature Algorithm: SHA256-RSA
+Not Before: 2026-09-16T17:11:06Z
+Not After: 2036-09-13T17:11:06Z
+Is CA: false
+
+Status: VALID (expires in 87600h0m0s)
+
+Verifying certificate chain against CA...
+Chain verification: OK
 ----

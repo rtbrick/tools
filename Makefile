@@ -9,7 +9,8 @@ build:
 	go build -o $(BIN) $(MODULE)
 
 test:
-	go test ./...
+	go test -cover -coverprofile=coverage.out ./...
+	#go tool cover -func=coverage.out
 
 fmt:
 	gofmt -s -w .
@@ -24,4 +25,4 @@ fix:
 	go fix ./...
 
 clean:
-	rm -f $(BIN)
+	rm -f $(BIN) coverage.out

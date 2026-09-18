@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"runtime"
 	"runtime/debug"
 
@@ -15,9 +14,9 @@ func newVersionCmd() *cobra.Command {
 		Short: "Print version and build metadata",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Printf("Version:   %s\n", config.VERSION)
-			fmt.Printf("Go:        %s\n", runtime.Version())
-			fmt.Printf("Platform:  %s/%s\n", runtime.GOOS, runtime.GOARCH)
+			cmd.Printf("Version:   %s\n", config.VERSION)
+			cmd.Printf("Go:        %s\n", runtime.Version())
+			cmd.Printf("Platform:  %s/%s\n", runtime.GOOS, runtime.GOARCH)
 
 			info, ok := debug.ReadBuildInfo()
 			if !ok {
@@ -27,15 +26,15 @@ func newVersionCmd() *cobra.Command {
 			for _, s := range info.Settings {
 				switch s.Key {
 				case "-compiler":
-					fmt.Printf("Compiler:  %s\n", s.Value)
+					cmd.Printf("Compiler:  %s\n", s.Value)
 				case "vcs":
-					fmt.Printf("VCS:       %s\n", s.Value)
+					cmd.Printf("VCS:       %s\n", s.Value)
 				case "vcs.revision":
-					fmt.Printf("Revision:  %s\n", s.Value)
+					cmd.Printf("Revision:  %s\n", s.Value)
 				case "vcs.time":
-					fmt.Printf("Commit:    %s\n", s.Value)
+					cmd.Printf("Commit:    %s\n", s.Value)
 				case "vcs.modified":
-					fmt.Printf("Modified:  %s\n", s.Value)
+					cmd.Printf("Modified:  %s\n", s.Value)
 				}
 			}
 			return nil

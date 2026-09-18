@@ -1,7 +1,6 @@
 package apigw
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/rtbrick/tools/pkg/generator"
@@ -15,7 +14,7 @@ func NewGenerateCmd() *cobra.Command {
 	}
 	cmd.AddCommand(newJWKSCmd())
 	cmd.AddCommand(newTokenCmd())
-	cmd.AddCommand(newTLSCertCmd())
+	cmd.AddCommand(newTLSCmd())
 	return cmd
 }
 
@@ -29,8 +28,8 @@ func newJWKSCmd() *cobra.Command {
 			if err := generator.GenerateJWKS(privPath, pubPath, kid); err != nil {
 				return err
 			}
-			fmt.Printf("Private JWKS written to %s\n", privPath)
-			fmt.Printf("Public JWKS written to %s\n", pubPath)
+			cmd.Printf("Private JWKS written to %s\n", privPath)
+			cmd.Printf("Public JWKS written to %s\n", pubPath)
 			return nil
 		},
 	}
@@ -54,7 +53,7 @@ func newTokenCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println(token)
+			cmd.Println(token)
 			return nil
 		},
 	}
@@ -82,7 +81,7 @@ func newTokenCmd() *cobra.Command {
 	return cmd
 }
 
-func newTLSCertCmd() *cobra.Command {
+func newTLSCmd() *cobra.Command {
 	var certPath, keyPath, org string
 	var hosts []string
 
@@ -93,8 +92,8 @@ func newTLSCertCmd() *cobra.Command {
 			if err := generator.GenerateTLSCertificate(certPath, keyPath, org, hosts); err != nil {
 				return err
 			}
-			fmt.Printf("TLS certificate written to %s\n", certPath)
-			fmt.Printf("TLS key written to %s\n", keyPath)
+			cmd.Printf("TLS certificate written to %s\n", certPath)
+			cmd.Printf("TLS key written to %s\n", keyPath)
 			return nil
 		},
 	}

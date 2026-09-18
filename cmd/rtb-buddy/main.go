@@ -12,7 +12,7 @@ func main() {
 		AddSource: false,
 		Level:     slog.LevelDebug,
 	})))
-	if err := cmd.NewRootCmd().Execute(); err != nil {
+	if err := cmd.NewRootCmd(false, false).Execute(); err != nil {
 		os.Exit(1)
 	}
 }
