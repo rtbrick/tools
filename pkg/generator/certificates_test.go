@@ -6,7 +6,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -18,8 +17,8 @@ func TestGenerateCA(t *testing.T) {
 		name         string
 		subject      pkix.Name
 		valid        time.Duration
-		certPath     string
-		keyPath      string
+		wantCert     string
+		wantKey      string
 		wantErr      bool
 		errMsg       string
 		wantIsCA     bool
@@ -29,6 +28,8 @@ func TestGenerateCA(t *testing.T) {
 			name:         "valid_ca_defaults",
 			subject:      pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:        10 * 365 * 24 * time.Hour,
+			wantCert:     "testdata/ca.crt",
+			wantKey:      "testdata/ca.key",
 			wantIsCA:     true,
 			wantKeyUsage: x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		},
@@ -36,6 +37,8 @@ func TestGenerateCA(t *testing.T) {
 			name:         "valid_ca_short_duration",
 			subject:      pkix.Name{CommonName: "Short CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:        1 * time.Hour,
+			wantCert:     "testdata/ca.crt",
+			wantKey:      "testdata/ca.key",
 			wantIsCA:     true,
 			wantKeyUsage: x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		},
@@ -43,6 +46,8 @@ func TestGenerateCA(t *testing.T) {
 			name:         "valid_ca_multiple_ous",
 			subject:      pkix.Name{CommonName: "Multi OU CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng", "Security"}},
 			valid:        5 * 365 * 24 * time.Hour,
+			wantCert:     "testdata/ca.crt",
+			wantKey:      "testdata/ca.key",
 			wantIsCA:     true,
 			wantKeyUsage: x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		},
@@ -50,8 +55,8 @@ func TestGenerateCA(t *testing.T) {
 			name:     "invalid_cert_path",
 			subject:  pkix.Name{CommonName: "Bad Path CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:    10 * 365 * 24 * time.Hour,
-			certPath: "/nonexistent/dir/ca.crt",
-			keyPath:  "ca.key",
+			wantCert: "/nonexistent/dir/ca.crt",
+			wantKey:  "testdata/ca.key",
 			wantErr:  true,
 			errMsg:   "write certificate file",
 		},
@@ -59,8 +64,8 @@ func TestGenerateCA(t *testing.T) {
 			name:     "invalid_key_path",
 			subject:  pkix.Name{CommonName: "Bad Path CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:    10 * 365 * 24 * time.Hour,
-			certPath: "ca.crt",
-			keyPath:  "/nonexistent/dir/ca.key",
+			wantCert: "testdata/ca.crt",
+			wantKey:  "/nonexistent/dir/ca.key",
 			wantErr:  true,
 			errMsg:   "write private key file",
 		},
@@ -68,19 +73,16 @@ func TestGenerateCA(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := t.TempDir()
+			t.Cleanup(func() {
+				_ = os.Remove(tt.wantCert)
+				_ = os.Remove(tt.wantKey)
+			})
 
-			certPath := filepath.Join(dir, "ca.crt")
-			keyPath := filepath.Join(dir, "ca.key")
-
-			if tt.certPath != "" {
-				certPath = tt.certPath
-			}
-			if tt.keyPath != "" {
-				keyPath = tt.keyPath
+			if err := os.MkdirAll("testdata", 0o755); err != nil {
+				t.Fatal(err)
 			}
 
-			result, err := GenerateCA(certPath, keyPath, tt.subject, tt.valid)
+			result, err := GenerateCA(tt.wantCert, tt.wantKey, tt.subject, tt.valid)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -92,14 +94,16 @@ func TestGenerateCA(t *testing.T) {
 			require.NotNil(t, result)
 			require.NotNil(t, result.Certificate)
 			require.NotNil(t, result.PrivateKey)
+			require.FileExists(t, tt.wantCert)
+			require.FileExists(t, tt.wantKey)
 
 			// Verify certificate file exists
-			certData, err := os.ReadFile(certPath)
+			certData, err := os.ReadFile(tt.wantCert)
 			require.NoError(t, err)
 			require.NotEmpty(t, certData)
 
 			// Verify key file exists
-			keyData, err := os.ReadFile(keyPath)
+			keyData, err := os.ReadFile(tt.wantKey)
 			require.NoError(t, err)
 			require.NotEmpty(t, keyData)
 
@@ -143,11 +147,11 @@ func TestGenerateCA(t *testing.T) {
 			require.Equal(t, &privKey.PublicKey, cert.PublicKey)
 
 			// Verify file permissions
-			certInfo, err := os.Stat(certPath)
+			certInfo, err := os.Stat(tt.wantCert)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o644), certInfo.Mode().Perm())
 
-			keyInfo, err := os.Stat(keyPath)
+			keyInfo, err := os.Stat(tt.wantKey)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o600), keyInfo.Mode().Perm())
 		})
@@ -155,18 +159,25 @@ func TestGenerateCA(t *testing.T) {
 }
 
 func TestGenerateCert(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
 	// Generate a CA first for signing
-	caDir := t.TempDir()
 	caSubject := pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	ca, err := GenerateCA(filepath.Join(caDir, "ca.crt"), filepath.Join(caDir, "ca.key"), caSubject, 10*365*24*time.Hour)
+	ca, err := GenerateCA("testdata/ca.crt", "testdata/ca.key", caSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = os.Remove("testdata/ca.crt")
+		_ = os.Remove("testdata/ca.key")
+	})
 
 	tests := []struct {
 		name     string
 		subject  pkix.Name
 		valid    time.Duration
-		certPath string
-		keyPath  string
+		wantCert string
+		wantKey  string
 		wantErr  bool
 		errMsg   string
 		wantDNS  []string
@@ -176,6 +187,8 @@ func TestGenerateCert(t *testing.T) {
 			name:     "valid_cert",
 			subject:  pkix.Name{CommonName: "Test Device", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:    10 * 365 * 24 * time.Hour,
+			wantCert: "testdata/cert.crt",
+			wantKey:  "testdata/cert.key",
 			wantDNS:  []string{"localhost"},
 			wantIsCA: false,
 		},
@@ -183,6 +196,8 @@ func TestGenerateCert(t *testing.T) {
 			name:     "valid_cert_short_duration",
 			subject:  pkix.Name{CommonName: "Short Device", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:    1 * time.Hour,
+			wantCert: "testdata/cert.crt",
+			wantKey:  "testdata/cert.key",
 			wantDNS:  []string{"localhost"},
 			wantIsCA: false,
 		},
@@ -190,6 +205,8 @@ func TestGenerateCert(t *testing.T) {
 			name:     "valid_cert_multiple_ous",
 			subject:  pkix.Name{CommonName: "Multi OU Device", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng", "Security"}},
 			valid:    5 * 365 * 24 * time.Hour,
+			wantCert: "testdata/cert.crt",
+			wantKey:  "testdata/cert.key",
 			wantDNS:  []string{"localhost"},
 			wantIsCA: false,
 		},
@@ -197,8 +214,8 @@ func TestGenerateCert(t *testing.T) {
 			name:     "invalid_cert_path",
 			subject:  pkix.Name{CommonName: "Bad Path", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:    10 * 365 * 24 * time.Hour,
-			certPath: "/nonexistent/dir/cert.crt",
-			keyPath:  "cert.key",
+			wantCert: "/nonexistent/dir/cert.crt",
+			wantKey:  "testdata/cert.key",
 			wantErr:  true,
 			errMsg:   "write certificate file",
 		},
@@ -206,8 +223,8 @@ func TestGenerateCert(t *testing.T) {
 			name:     "invalid_key_path",
 			subject:  pkix.Name{CommonName: "Bad Path", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}},
 			valid:    10 * 365 * 24 * time.Hour,
-			certPath: "cert.crt",
-			keyPath:  "/nonexistent/dir/cert.key",
+			wantCert: "testdata/cert.crt",
+			wantKey:  "/nonexistent/dir/cert.key",
 			wantErr:  true,
 			errMsg:   "write private key file",
 		},
@@ -215,19 +232,12 @@ func TestGenerateCert(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := t.TempDir()
+			t.Cleanup(func() {
+				_ = os.Remove(tt.wantCert)
+				_ = os.Remove(tt.wantKey)
+			})
 
-			certPath := filepath.Join(dir, "cert.crt")
-			keyPath := filepath.Join(dir, "cert.key")
-
-			if tt.certPath != "" {
-				certPath = tt.certPath
-			}
-			if tt.keyPath != "" {
-				keyPath = tt.keyPath
-			}
-
-			err := GenerateCert(ca.Certificate, ca.PrivateKey, certPath, keyPath, tt.subject, tt.valid)
+			err := GenerateCert(ca.Certificate, ca.PrivateKey, tt.wantCert, tt.wantKey, tt.subject, tt.valid)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -236,14 +246,16 @@ func TestGenerateCert(t *testing.T) {
 			}
 
 			require.NoError(t, err)
+			require.FileExists(t, tt.wantCert)
+			require.FileExists(t, tt.wantKey)
 
 			// Verify cert file exists
-			certData, err := os.ReadFile(certPath)
+			certData, err := os.ReadFile(tt.wantCert)
 			require.NoError(t, err)
 			require.NotEmpty(t, certData)
 
 			// Verify key file exists
-			keyData, err := os.ReadFile(keyPath)
+			keyData, err := os.ReadFile(tt.wantKey)
 			require.NoError(t, err)
 			require.NotEmpty(t, keyData)
 
@@ -290,11 +302,11 @@ func TestGenerateCert(t *testing.T) {
 			require.Equal(t, &privKey.PublicKey, cert.PublicKey)
 
 			// Verify file permissions
-			certInfo, err := os.Stat(certPath)
+			certInfo, err := os.Stat(tt.wantCert)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o644), certInfo.Mode().Perm())
 
-			keyInfo, err := os.Stat(keyPath)
+			keyInfo, err := os.Stat(tt.wantKey)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o600), keyInfo.Mode().Perm())
 		})
@@ -302,16 +314,26 @@ func TestGenerateCert(t *testing.T) {
 }
 
 func TestLoadCA(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
 	// Generate a valid CA for testing
-	caDir := t.TempDir()
 	caSubject := pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	validCA, err := GenerateCA(filepath.Join(caDir, "ca.crt"), filepath.Join(caDir, "ca.key"), caSubject, 10*365*24*time.Hour)
+	validCA, err := GenerateCA("testdata/ca.crt", "testdata/ca.key", caSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = os.Remove("testdata/ca.crt")
+		_ = os.Remove("testdata/ca.key")
+	})
 
 	// Create invalid PEM files
-	invalidCertDir := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(invalidCertDir, "bad.crt"), []byte("not a pem"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(invalidCertDir, "bad.key"), []byte("not a pem"), 0o644))
+	require.NoError(t, os.WriteFile("testdata/bad.crt", []byte("not a pem"), 0o644))
+	require.NoError(t, os.WriteFile("testdata/bad.key", []byte("not a pem"), 0o644))
+	t.Cleanup(func() {
+		_ = os.Remove("testdata/bad.crt")
+		_ = os.Remove("testdata/bad.key")
+	})
 
 	tests := []struct {
 		name     string
@@ -323,35 +345,35 @@ func TestLoadCA(t *testing.T) {
 	}{
 		{
 			name:     "valid_ca",
-			certPath: filepath.Join(caDir, "ca.crt"),
-			keyPath:  filepath.Join(caDir, "ca.key"),
+			certPath: "testdata/ca.crt",
+			keyPath:  "testdata/ca.key",
 			wantCN:   "Test CA",
 		},
 		{
 			name:     "missing_cert_file",
-			certPath: filepath.Join(caDir, "nonexistent.crt"),
-			keyPath:  filepath.Join(caDir, "ca.key"),
+			certPath: "testdata/nonexistent.crt",
+			keyPath:  "testdata/ca.key",
 			wantErr:  true,
 			errMsg:   "read CA certificate",
 		},
 		{
 			name:     "missing_key_file",
-			certPath: filepath.Join(caDir, "ca.crt"),
-			keyPath:  filepath.Join(caDir, "nonexistent.key"),
+			certPath: "testdata/ca.crt",
+			keyPath:  "testdata/nonexistent.key",
 			wantErr:  true,
 			errMsg:   "read CA private key",
 		},
 		{
 			name:     "invalid_cert_pem",
-			certPath: filepath.Join(invalidCertDir, "bad.crt"),
-			keyPath:  filepath.Join(caDir, "ca.key"),
+			certPath: "testdata/bad.crt",
+			keyPath:  "testdata/ca.key",
 			wantErr:  true,
 			errMsg:   "parse CA certificate",
 		},
 		{
 			name:     "invalid_key_pem",
-			certPath: filepath.Join(caDir, "ca.crt"),
-			keyPath:  filepath.Join(invalidCertDir, "bad.key"),
+			certPath: "testdata/ca.crt",
+			keyPath:  "testdata/bad.key",
 			wantErr:  true,
 			errMsg:   "parse CA private key",
 		},
@@ -383,28 +405,38 @@ func TestLoadCA(t *testing.T) {
 }
 
 func TestVerifyCertificate(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
 	// Generate a CA and certificate for testing
-	caDir := t.TempDir()
 	caSubject := pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	ca, err := GenerateCA(filepath.Join(caDir, "ca.crt"), filepath.Join(caDir, "ca.key"), caSubject, 10*365*24*time.Hour)
+	ca, err := GenerateCA("testdata/ca.crt", "testdata/ca.key", caSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
 
-	// Generate a valid certificate signed by the CA
-	certDir := t.TempDir()
 	certSubject := pkix.Name{CommonName: "Test Device", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	err = GenerateCert(ca.Certificate, ca.PrivateKey, filepath.Join(certDir, "cert.crt"), filepath.Join(certDir, "cert.key"), certSubject, 10*365*24*time.Hour)
+	err = GenerateCert(ca.Certificate, ca.PrivateKey, "testdata/cert.crt", "testdata/cert.key", certSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
 
 	// Generate another CA and certificate (not signed by the first CA)
-	otherDir := t.TempDir()
 	otherCASubject := pkix.Name{CommonName: "Other CA", Organization: []string{"OtherOrg"}, OrganizationalUnit: []string{"Eng"}}
-	otherCA, err := GenerateCA(filepath.Join(otherDir, "other-ca.crt"), filepath.Join(otherDir, "other-ca.key"), otherCASubject, 10*365*24*time.Hour)
+	otherCA, err := GenerateCA("testdata/other-ca.crt", "testdata/other-ca.key", otherCASubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
 
-	otherCertDir := t.TempDir()
 	otherCertSubject := pkix.Name{CommonName: "Other Device", Organization: []string{"OtherOrg"}, OrganizationalUnit: []string{"Eng"}}
-	err = GenerateCert(otherCA.Certificate, otherCA.PrivateKey, filepath.Join(otherCertDir, "other-cert.crt"), filepath.Join(otherCertDir, "other-cert.key"), otherCertSubject, 10*365*24*time.Hour)
+	err = GenerateCert(otherCA.Certificate, otherCA.PrivateKey, "testdata/other-cert.crt", "testdata/other-cert.key", otherCertSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		for _, f := range []string{
+			"testdata/ca.crt", "testdata/ca.key",
+			"testdata/cert.crt", "testdata/cert.key",
+			"testdata/other-ca.crt", "testdata/other-ca.key",
+			"testdata/other-cert.crt", "testdata/other-cert.key",
+		} {
+			_ = os.Remove(f)
+		}
+	})
 
 	tests := []struct {
 		name       string
@@ -415,28 +447,28 @@ func TestVerifyCertificate(t *testing.T) {
 	}{
 		{
 			name:       "valid_cert_signed_by_ca",
-			certPath:   filepath.Join(certDir, "cert.crt"),
-			caCertPath: filepath.Join(caDir, "ca.crt"),
+			certPath:   "testdata/cert.crt",
+			caCertPath: "testdata/ca.crt",
 			wantErr:    false,
 		},
 		{
 			name:       "cert_not_signed_by_ca",
-			certPath:   filepath.Join(otherCertDir, "other-cert.crt"),
-			caCertPath: filepath.Join(caDir, "ca.crt"),
+			certPath:   "testdata/other-cert.crt",
+			caCertPath: "testdata/ca.crt",
 			wantErr:    true,
 			errMsg:     "certificate verification failed",
 		},
 		{
 			name:       "missing_cert_file",
-			certPath:   filepath.Join(certDir, "nonexistent.crt"),
-			caCertPath: filepath.Join(caDir, "ca.crt"),
+			certPath:   "testdata/nonexistent.crt",
+			caCertPath: "testdata/ca.crt",
 			wantErr:    true,
 			errMsg:     "read certificate",
 		},
 		{
 			name:       "missing_ca_file",
-			certPath:   filepath.Join(certDir, "cert.crt"),
-			caCertPath: filepath.Join(caDir, "nonexistent.crt"),
+			certPath:   "testdata/cert.crt",
+			caCertPath: "testdata/nonexistent.crt",
 			wantErr:    true,
 			errMsg:     "read CA certificate",
 		},
@@ -458,17 +490,28 @@ func TestVerifyCertificate(t *testing.T) {
 }
 
 func TestGetCertificateInfo(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
 	// Generate a CA for testing
-	caDir := t.TempDir()
 	caSubject := pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	ca, err := GenerateCA(filepath.Join(caDir, "ca.crt"), filepath.Join(caDir, "ca.key"), caSubject, 10*365*24*time.Hour)
+	ca, err := GenerateCA("testdata/ca.crt", "testdata/ca.key", caSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
 
 	// Generate a certificate for testing
-	certDir := t.TempDir()
 	certSubject := pkix.Name{CommonName: "Test Device", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	err = GenerateCert(ca.Certificate, ca.PrivateKey, filepath.Join(certDir, "cert.crt"), filepath.Join(certDir, "cert.key"), certSubject, 10*365*24*time.Hour)
+	err = GenerateCert(ca.Certificate, ca.PrivateKey, "testdata/cert.crt", "testdata/cert.key", certSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		for _, f := range []string{
+			"testdata/ca.crt", "testdata/ca.key",
+			"testdata/cert.crt", "testdata/cert.key",
+		} {
+			_ = os.Remove(f)
+		}
+	})
 
 	tests := []struct {
 		name     string
@@ -481,7 +524,7 @@ func TestGetCertificateInfo(t *testing.T) {
 	}{
 		{
 			name:     "valid_certificate",
-			certPath: filepath.Join(certDir, "cert.crt"),
+			certPath: "testdata/cert.crt",
 			wantErr:  false,
 			wantCN:   "Test Device",
 			wantIsCA: false,
@@ -489,7 +532,7 @@ func TestGetCertificateInfo(t *testing.T) {
 		},
 		{
 			name:     "valid_ca_certificate",
-			certPath: filepath.Join(caDir, "ca.crt"),
+			certPath: "testdata/ca.crt",
 			wantErr:  false,
 			wantCN:   "Test CA",
 			wantIsCA: true,
@@ -497,7 +540,7 @@ func TestGetCertificateInfo(t *testing.T) {
 		},
 		{
 			name:     "missing_file",
-			certPath: filepath.Join(certDir, "nonexistent.crt"),
+			certPath: "testdata/nonexistent.crt",
 			wantErr:  true,
 			errMsg:   "read certificate",
 		},
@@ -531,19 +574,30 @@ func TestGetCertificateInfo(t *testing.T) {
 }
 
 func TestPEMToCertificate(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
 	// Generate a valid certificate for testing
-	caDir := t.TempDir()
 	caSubject := pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	ca, err := GenerateCA(filepath.Join(caDir, "ca.crt"), filepath.Join(caDir, "ca.key"), caSubject, 10*365*24*time.Hour)
+	ca, err := GenerateCA("testdata/ca.crt", "testdata/ca.key", caSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
 
-	certDir := t.TempDir()
 	certSubject := pkix.Name{CommonName: "Test Device", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	err = GenerateCert(ca.Certificate, ca.PrivateKey, filepath.Join(certDir, "cert.crt"), filepath.Join(certDir, "cert.key"), certSubject, 10*365*24*time.Hour)
+	err = GenerateCert(ca.Certificate, ca.PrivateKey, "testdata/cert.crt", "testdata/cert.key", certSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		for _, f := range []string{
+			"testdata/ca.crt", "testdata/ca.key",
+			"testdata/cert.crt", "testdata/cert.key",
+		} {
+			_ = os.Remove(f)
+		}
+	})
 
 	// Read valid certificate PEM
-	validCertPEM, err := os.ReadFile(filepath.Join(certDir, "cert.crt"))
+	validCertPEM, err := os.ReadFile("testdata/cert.crt")
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -609,14 +663,22 @@ func TestPEMToCertificate(t *testing.T) {
 }
 
 func TestPEMToPrivateKey(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
 	// Generate a valid private key for testing
-	caDir := t.TempDir()
 	caSubject := pkix.Name{CommonName: "Test CA", Organization: []string{"TestOrg"}, OrganizationalUnit: []string{"Eng"}}
-	_, err := GenerateCA(filepath.Join(caDir, "ca.crt"), filepath.Join(caDir, "ca.key"), caSubject, 10*365*24*time.Hour)
+	_, err := GenerateCA("testdata/ca.crt", "testdata/ca.key", caSubject, 10*365*24*time.Hour)
 	require.NoError(t, err)
 
+	t.Cleanup(func() {
+		_ = os.Remove("testdata/ca.crt")
+		_ = os.Remove("testdata/ca.key")
+	})
+
 	// Read valid private key PEM
-	validKeyPEM, err := os.ReadFile(filepath.Join(caDir, "ca.key"))
+	validKeyPEM, err := os.ReadFile("testdata/ca.key")
 	require.NoError(t, err)
 
 	tests := []struct {

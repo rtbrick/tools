@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"os"
 	"testing"
 
@@ -16,6 +15,8 @@ func TestGenerateTLSCertificate(t *testing.T) {
 		name         string
 		organization string
 		hosts        []string
+		wantCert     string
+		wantKey      string
 		wantDNS      []string
 		wantIPs      []string
 		wantErr      bool
@@ -25,18 +26,24 @@ func TestGenerateTLSCertificate(t *testing.T) {
 			name:         "dns_hosts",
 			organization: "TestOrg",
 			hosts:        []string{"example.com", "www.example.com"},
+			wantCert:     "testdata/cert.pem",
+			wantKey:      "testdata/key.pem",
 			wantDNS:      []string{"example.com", "www.example.com"},
 		},
 		{
 			name:         "ip_hosts",
 			organization: "TestOrg",
 			hosts:        []string{"127.0.0.1", "10.0.0.1"},
+			wantCert:     "testdata/cert.pem",
+			wantKey:      "testdata/key.pem",
 			wantIPs:      []string{"127.0.0.1", "10.0.0.1"},
 		},
 		{
 			name:         "mixed_hosts",
 			organization: "TestOrg",
 			hosts:        []string{"example.com", "127.0.0.1", "10.0.0.1"},
+			wantCert:     "testdata/cert.pem",
+			wantKey:      "testdata/key.pem",
 			wantDNS:      []string{"example.com"},
 			wantIPs:      []string{"127.0.0.1", "10.0.0.1"},
 		},
@@ -44,6 +51,8 @@ func TestGenerateTLSCertificate(t *testing.T) {
 			name:         "empty_hosts",
 			organization: "TestOrg",
 			hosts:        nil,
+			wantCert:     "testdata/cert.pem",
+			wantKey:      "testdata/key.pem",
 			wantDNS:      []string{},
 			wantIPs:      []string{},
 		},
@@ -51,6 +60,8 @@ func TestGenerateTLSCertificate(t *testing.T) {
 			name:         "invalid_cert_path",
 			organization: "TestOrg",
 			hosts:        []string{"example.com"},
+			wantCert:     "/nonexistent/dir/cert.pem",
+			wantKey:      "testdata/key.pem",
 			wantErr:      true,
 			errMsg:       "write cert file",
 		},
@@ -58,6 +69,8 @@ func TestGenerateTLSCertificate(t *testing.T) {
 			name:         "invalid_key_path",
 			organization: "TestOrg",
 			hosts:        []string{"example.com"},
+			wantCert:     "testdata/cert.pem",
+			wantKey:      "/nonexistent/dir/key.pem",
 			wantErr:      true,
 			errMsg:       "write key file",
 		},
@@ -65,19 +78,16 @@ func TestGenerateTLSCertificate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := t.TempDir()
+			t.Cleanup(func() {
+				_ = os.Remove(tt.wantCert)
+				_ = os.Remove(tt.wantKey)
+			})
 
-			certPath := fmt.Sprintf("%s/cert.pem", dir)
-			keyPath := fmt.Sprintf("%s/key.pem", dir)
-
-			if tt.name == "invalid_cert_path" {
-				certPath = "/nonexistent/dir/cert.pem"
-			}
-			if tt.name == "invalid_key_path" {
-				keyPath = "/nonexistent/dir/key.pem"
+			if err := os.MkdirAll("testdata", 0o755); err != nil {
+				t.Fatal(err)
 			}
 
-			err := GenerateTLSCertificate(certPath, keyPath, tt.organization, tt.hosts)
+			err := GenerateTLSCertificate(tt.wantCert, tt.wantKey, tt.organization, tt.hosts)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -86,14 +96,16 @@ func TestGenerateTLSCertificate(t *testing.T) {
 			}
 
 			require.NoError(t, err)
+			require.FileExists(t, tt.wantCert)
+			require.FileExists(t, tt.wantKey)
 
 			// Verify cert file exists and is readable
-			certData, err := os.ReadFile(certPath)
+			certData, err := os.ReadFile(tt.wantCert)
 			require.NoError(t, err)
 			require.NotEmpty(t, certData)
 
 			// Verify key file exists and is readable
-			keyData, err := os.ReadFile(keyPath)
+			keyData, err := os.ReadFile(tt.wantKey)
 			require.NoError(t, err)
 			require.NotEmpty(t, keyData)
 
@@ -145,11 +157,11 @@ func TestGenerateTLSCertificate(t *testing.T) {
 			require.Equal(t, &privKey.PublicKey, cert.PublicKey)
 
 			// Verify file permissions
-			certInfo, err := os.Stat(certPath)
+			certInfo, err := os.Stat(tt.wantCert)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o644), certInfo.Mode().Perm())
 
-			keyInfo, err := os.Stat(keyPath)
+			keyInfo, err := os.Stat(tt.wantKey)
 			require.NoError(t, err)
 			require.Equal(t, os.FileMode(0o600), keyInfo.Mode().Perm())
 		})

@@ -4,19 +4,24 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/require"
 )
 
-// generateTestJWKS creates a temp dir and generates JWKS files.
+// generateTestJWKS creates testdata dir and generates JWKS files.
 func generateTestJWKS(t *testing.T, kid string) (privPath, pubPath string) {
 	t.Helper()
-	dir := t.TempDir()
-	privPath = filepath.Join(dir, "priv.json")
-	pubPath = filepath.Join(dir, "pub.json")
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+	privPath = "testdata/priv.json"
+	pubPath = "testdata/pub.json"
+	t.Cleanup(func() {
+		_ = os.Remove(privPath)
+		_ = os.Remove(pubPath)
+	})
 	require.NoError(t, GenerateJWKS(privPath, pubPath, kid))
 	return privPath, pubPath
 }
@@ -53,10 +58,8 @@ func TestGenerateJWKS(t *testing.T) {
 			privPath, pubPath := generateTestJWKS(t, tt.kid)
 
 			// Files exist
-			_, err := os.Stat(privPath)
-			require.NoError(t, err, "private JWKS file should exist")
-			_, err = os.Stat(pubPath)
-			require.NoError(t, err, "public JWKS file should exist")
+			require.FileExists(t, privPath)
+			require.FileExists(t, pubPath)
 
 			// Parse private JWKS
 			privData, err := os.ReadFile(privPath)
@@ -121,7 +124,7 @@ func TestLoadPrivateKeyFromJWKS(t *testing.T) {
 		},
 		{
 			name:    "missing file",
-			path:    filepath.Join(t.TempDir(), "nonexistent.json"),
+			path:    "testdata/nonexistent.json",
 			kid:     "",
 			wantErr: true,
 			errMsg:  "read jwks",
@@ -175,7 +178,7 @@ func TestLoadPublicKeyFromJWKS(t *testing.T) {
 		},
 		{
 			name:    "missing file",
-			path:    filepath.Join(t.TempDir(), "nonexistent.json"),
+			path:    "testdata/nonexistent.json",
 			kid:     "",
 			wantErr: true,
 			errMsg:  "read jwks",

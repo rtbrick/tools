@@ -55,26 +55,37 @@ func generateTestJWKSTemp(t *testing.T) string {
 }
 
 func TestGenerateJWKSCmd(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
 	tests := []struct {
-		name    string
-		args    []string
-		wantErr bool
-		errMsg  string
+		name     string
+		args     []string
+		wantErr  bool
+		errMsg   string
+		wantPriv string
+		wantPub  string
 	}{
 		{
-			name:    "default flags",
-			args:    []string{"jwks"},
-			wantErr: false,
+			name:     "default flags",
+			args:     []string{"jwks"},
+			wantErr:  false,
+			wantPriv: defaultPrivPath,
+			wantPub:  defaultPubPath,
 		},
 		{
-			name:    "custom kid",
-			args:    []string{"jwks", "--kid", "prod"},
-			wantErr: false,
+			name:     "custom kid",
+			args:     []string{"jwks", "--kid", "prod"},
+			wantErr:  false,
+			wantPriv: defaultPrivPath,
+			wantPub:  defaultPubPath,
 		},
 		{
-			name:    "custom paths",
-			args:    []string{"jwks", "--priv", "test-priv.json", "--pub", "test-pub.json"},
-			wantErr: false,
+			name:     "custom paths",
+			args:     []string{"jwks", "--priv", "testdata/priv.json", "--pub", "testdata/pub.json"},
+			wantErr:  false,
+			wantPriv: "testdata/priv.json",
+			wantPub:  "testdata/pub.json",
 		},
 		{
 			name:    "invalid priv path",
@@ -83,42 +94,37 @@ func TestGenerateJWKSCmd(t *testing.T) {
 			errMsg:  "no such file or directory",
 		},
 		{
-			name:    "invalid pub path",
-			args:    []string{"jwks", "--pub", "/nonexistent/dir/pub.json"},
-			wantErr: true,
-			errMsg:  "no such file or directory",
+			name:     "invalid pub path",
+			args:     []string{"jwks", "--pub", "/nonexistent/dir/pub.json"},
+			wantErr:  true,
+			errMsg:   "no such file or directory",
+			wantPriv: defaultPrivPath,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := t.TempDir()
+			t.Cleanup(func() {
+				_ = os.Remove(tt.wantPriv)
+				_ = os.Remove(tt.wantPub)
+			})
 
-			args := make([]string, len(tt.args))
-			copy(args, tt.args)
-
-			// Replace output paths with temp dir paths unless testing invalid paths
-			if !tt.wantErr || tt.name == "invalid priv path" || tt.name == "invalid pub path" {
-				for i, a := range args {
-					if a == "--priv" && i+1 < len(args) && args[i+1] == "test-priv.json" {
-						args[i+1] = filepath.Join(dir, "priv.json")
-					}
-					if a == "--pub" && i+1 < len(args) && args[i+1] == "test-pub.json" {
-						args[i+1] = filepath.Join(dir, "pub.json")
-					}
-				}
-			}
-
-			out, err := runCmd(t, NewGenerateCmd(), args...)
+			_, err := runCmd(t, NewGenerateCmd(), tt.args...)
 			if tt.wantErr {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), tt.errMsg)
+				if tt.wantPriv != "" {
+					require.FileExists(t, tt.wantPriv)
+				}
+				if tt.wantPub != "" {
+					require.FileExists(t, tt.wantPub)
+				}
 				return
 			}
 
 			require.NoError(t, err)
-			require.Contains(t, out, "Private JWKS written to")
-			require.Contains(t, out, "Public JWKS written to")
+			require.FileExists(t, tt.wantPriv)
+			require.FileExists(t, tt.wantPub)
 		})
 	}
 }
@@ -226,72 +232,73 @@ func TestGenerateTokenCmd(t *testing.T) {
 
 func TestGenerateTLSCertCmd(t *testing.T) {
 	tests := []struct {
-		name    string
-		args    []string
-		wantErr bool
-		errMsg  string
+		name     string
+		args     []string
+		wantErr  bool
+		errMsg   string
+		wantCert string
+		wantKey  string
 	}{
 		{
-			name:    "valid tls",
-			args:    []string{"tls", "--org", "TestOrg", "--cert", "server.crt", "--key", "server.key"},
-			wantErr: false,
+			name:     "valid tls",
+			args:     []string{"tls", "--org", "TestOrg", "--cert", "testdata/server.crt", "--key", "testdata/server.key"},
+			wantCert: "testdata/server.crt",
+			wantKey:  "testdata/server.key",
 		},
 		{
 			name:    "missing org",
-			args:    []string{"tls", "--cert", "server.crt", "--key", "server.key"},
+			args:    []string{"tls", "--cert", "testdata/server.crt", "--key", "testdata/server.key"},
 			wantErr: true,
 			errMsg:  "required flag(s) \"org\" not set",
 		},
 		{
-			name:    "custom hosts",
-			args:    []string{"tls", "--org", "TestOrg", "--host", "example.com", "--host", "127.0.0.1", "--cert", "server.crt", "--key", "server.key"},
-			wantErr: false,
+			name:     "custom hosts",
+			args:     []string{"tls", "--org", "TestOrg", "--host", "example.com", "--host", "127.0.0.1", "--cert", "testdata/server.crt", "--key", "testdata/server.key"},
+			wantCert: "testdata/server.crt",
+			wantKey:  "testdata/server.key",
 		},
 		{
 			name:    "invalid cert path",
-			args:    []string{"tls", "--org", "TestOrg", "--cert", "/no/dir/cert.pem", "--key", "server.key"},
+			args:    []string{"tls", "--org", "TestOrg", "--cert", "/no/dir/cert.pem", "--key", "testdata/server.key"},
 			wantErr: true,
 		},
 		{
-			name:    "invalid key path",
-			args:    []string{"tls", "--org", "TestOrg", "--cert", "server.crt", "--key", "/no/dir/key.pem"},
-			wantErr: true,
+			name:     "invalid key path",
+			args:     []string{"tls", "--org", "TestOrg", "--cert", "testdata/server.crt", "--key", "/no/dir/key.pem"},
+			wantErr:  true,
+			wantCert: "testdata/server.crt",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := t.TempDir()
-			certPath := filepath.Join(dir, "server.crt")
-			keyPath := filepath.Join(dir, "server.key")
+			t.Cleanup(func() {
+				_ = os.Remove(tt.wantCert)
+				_ = os.Remove(tt.wantKey)
+			})
 
-			args := make([]string, len(tt.args))
-			copy(args, tt.args)
-
-			// Replace paths unless testing invalid paths
-			if !tt.wantErr {
-				for i, a := range args {
-					if a == "server.crt" && i > 0 && args[i-1] == "--cert" {
-						args[i] = certPath
-					}
-					if a == "server.key" && i > 0 && args[i-1] == "--key" {
-						args[i] = keyPath
-					}
-				}
+			if err := os.MkdirAll("testdata", 0o755); err != nil {
+				t.Fatal(err)
 			}
 
-			out, err := runCmd(t, NewGenerateCmd(), args...)
+			_, err := runCmd(t, NewGenerateCmd(), tt.args...)
 			if tt.wantErr {
 				require.Error(t, err)
+				if tt.wantCert != "" {
+					require.FileExists(t, tt.wantCert)
+				}
+				if tt.wantKey != "" {
+					require.FileExists(t, tt.wantKey)
+				}
 				return
 			}
 
 			require.NoError(t, err)
-			require.Contains(t, out, "TLS certificate written to")
-			require.Contains(t, out, "TLS key written to")
+			require.FileExists(t, tt.wantCert)
+			require.FileExists(t, tt.wantKey)
 
 			// Verify cert file is valid PEM
-			certData, err := os.ReadFile(certPath)
+			certData, err := os.ReadFile(tt.wantCert)
 			require.NoError(t, err)
 			certBlock, _ := pem.Decode(certData)
 			require.NotNil(t, certBlock)
@@ -302,7 +309,7 @@ func TestGenerateTLSCertCmd(t *testing.T) {
 			require.Equal(t, []string{"TestOrg"}, cert.Subject.Organization)
 
 			// Verify key file is valid PEM
-			keyData, err := os.ReadFile(keyPath)
+			keyData, err := os.ReadFile(tt.wantKey)
 			require.NoError(t, err)
 			keyBlock, _ := pem.Decode(keyData)
 			require.NotNil(t, keyBlock)

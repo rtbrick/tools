@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"path/filepath"
+	"os"
 	"testing"
 	"time"
 
@@ -49,7 +49,7 @@ func TestGenerateToken(t *testing.T) {
 		},
 		{
 			name:        "missing private key file",
-			privPath:    filepath.Join(t.TempDir(), "nonexistent.json"),
+			privPath:    "testdata/nonexistent.json",
 			selectKid:   "",
 			overrideKid: "",
 			wantErr:     true,
@@ -194,10 +194,18 @@ func TestInspectToken(t *testing.T) {
 }
 
 func TestIntegration_GenerateAndInspect(t *testing.T) {
+	if err := os.MkdirAll("testdata", 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	privPath := "testdata/priv.json"
+	pubPath := "testdata/pub.json"
+	t.Cleanup(func() {
+		_ = os.Remove(privPath)
+		_ = os.Remove(pubPath)
+	})
+
 	// Mimic: rtb-buddy apigw generate jwks
-	dir := t.TempDir()
-	privPath := filepath.Join(dir, "priv.json")
-	pubPath := filepath.Join(dir, "pub.json")
 	require.NoError(t, GenerateJWKS(privPath, pubPath, "access"))
 
 	// Mimic: rtb-buddy apigw generate token
