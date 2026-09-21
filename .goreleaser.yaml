@@ -1,0 +1,62 @@
+version: 2
+
+project_name: rtb-buddy
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: rtb-buddy
+    main: ./cmd/rtb-buddy
+    binary: rtb-buddy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/rtbrick/tools/cmd/rtb-buddy/config.VERSION={{.Version}}
+
+archives:
+  - id: default
+    ids:
+      - rtb-buddy
+    formats: ["tar.gz"]
+    name_template: "rtb-buddy_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+homebrew_casks:
+  - name: rtb-buddy
+    repository:
+      owner: rtbrick
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/rtbrick/tools"
+    description: "Multipurpose helper tool for the RtBrick fullstack"
+    binaries: [rtb-buddy]
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/rtb-buddy"]
+          end
