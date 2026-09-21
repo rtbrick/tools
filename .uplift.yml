@@ -1,0 +1,29 @@
+annotatedTags: true
+
+changelog:
+  sort: asc
+  exclude:
+    - '^docs:'
+    - '^test:'
+    - '^chore:'
+    - '^ci:'
+    - '^build:'
+
+github:
+  url: https://github.com
+
+git:
+  ignoreShallow: true
+  ignoreDetached: true
+
+# File bumping (uncomment and configure if needed)
+# bumps:
+#   - file: cmd/rtb-buddy/config/version.go
+#     regex:
+#       - pattern: 'var VERSION = "dev"'
+#         semver: true
+
+hooks:
+  before:
+    - go mod tidy
+    - go test ./...
