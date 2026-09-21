@@ -1,0 +1,241 @@
+= rtbrick/tools
+:toc: left
+:toclevels: 3
+:sectnums:
+:source-highlighter: rouge
+:icons: font
+:experimental:
+
+// Badges
+image:https://img.shields.io/badge/license-BSD_3--Clause-blue.svg[License]
+image:https://img.shields.io/badge/go-1.27+-00ADD8.svg[Go Version]
+image:https://img.shields.io/badge/module-github.com%2Frtbrick%2Ftools-green.svg[Module]
+
+== Overview
+
+`rtbrick/tools` is a **collection of CLI tools** for the RtBrick platform.
+
+== Tools
+
+|===
+| Tool | Description
+
+| `rtb-buddy`
+| Multipurpose helper tool for the RtBrick fullstack. See link:cmd/rtb-buddy/README.adoc[documentation].
+
+|===
+
+== Installation
+
+=== Quick Install
+
+[source,sh]
+----
+curl -fsSL https://raw.githubusercontent.com/rtbrick/tools/main/install.sh | sudo bash
+----
+
+This detects your OS and architecture, downloads the latest release from GitHub, verifies the checksum, and installs `rtb-buddy` to `/usr/local/bin`.
+
+=== Options
+
+[source,sh]
+----
+# Install a specific version
+curl -fsSL https://raw.githubusercontent.com/rtbrick/tools/main/install.sh | sudo bash -s -- --version v1.0.0
+
+# Install to a custom directory
+curl -fsSL https://raw.githubusercontent.com/rtbrick/tools/main/install.sh | bash -s -- --dir ~/.local/bin
+
+# Uninstall
+curl -fsSL https://raw.githubusercontent.com/rtbrick/tools/main/install.sh | sudo bash -s -- --uninstall
+----
+
+=== Homebrew (macOS)
+
+[source,sh]
+----
+brew install rtbrick/tap/rtb-buddy
+----
+
+=== From Source
+
+[source,sh]
+----
+git clone https://github.com/rtbrick/tools.git
+cd tools
+make build
+sudo cp rtb-buddy /usr/local/bin/
+----
+
+== Development
+
+=== Prerequisites
+
+* Go 1.27+
+* Git
+* https://golangci-lint.run/[golangci-lint] (optional, for `make lint`)
+
+=== Make Targets
+
+[source,sh]
+----
+make build    # Build the rtb-buddy binary
+make test     # Run all tests
+make fmt      # Format source code
+make lint     # Run golangci-lint
+make vet      # Run go vet
+make clean    # Remove built binaries
+----
+
+== Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+=== Reporting Issues
+
+* Search existing issues first to avoid duplicates
+* Use the issue template if available
+* Include: steps to reproduce, expected vs actual behavior, environment
+
+=== Pull Requests
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-change`
+3. Make your changes with clear, focused commits
+4. Run `make fmt` and `make lint` before committing
+5. Add tests for new functionality
+6. Open a PR with a descriptive title and description
+
+=== Code Style
+
+* Follow standard Go conventions (`gofmt`, `golint`)
+* Keep functions small and focused
+* Document exported types and functions with Go doc comments
+* Update documentation when behavior changes
+
+=== Commit Messages
+
+Use conventional commits format:
+
+[source,sh]
+----
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+----
+
+Examples:
+* `feat(rtb-buddy): add --aud flag for token audience`
+* `fix(utils): handle empty KID in JWKS lookup`
+* `docs: update shell completion instructions`
+
+== Testing the Release Workflow
+
+=== Prerequisites
+
+* https://goreleaser.com/[GoReleaser] v2+ (`go install github.com/goreleaser/goreleaser/v2@latest`)
+* `jq` (for install script testing)
+
+=== Step 1: Snapshot Build (Local)
+
+Test cross-compilation and archive creation without publishing:
+
+[source,sh]
+----
+make snapshot
+----
+
+This builds all 6 binaries (linux/darwin/windows × amd64/arm64) and outputs them to `dist/`. Verify:
+
+[source,sh]
+----
+ls dist/
+dist/rtb-buddy_linux_amd64/
+dist/rtb-buddy_darwin_arm64/
+dist/checksums.txt
+...
+
+# Test the local binary
+./dist/rtb-buddy_linux_amd64/rtb-buddy version
+----
+
+=== Step 2: CI Workflow (PR)
+
+Push a branch and open a PR to verify lint and tests run:
+
+[source,sh]
+----
+git checkout -b test-ci
+git add . && git commit -m "ci: test workflow"
+git push -u origin test-ci
+# Open a PR → CI runs automatically
+----
+
+=== Step 3: Pre-Release (Full End-to-End)
+
+Create a pre-release tag to test the full release pipeline:
+
+[source,sh]
+----
+git tag v0.0.1-rc.1
+git push --tags
+----
+
+This triggers the release workflow which:
+
+1. Builds all binaries via GoReleaser
+2. Creates a GitHub release at https://github.com/rtbrick/tools/releases/tag/v0.0.1-rc.1
+3. Pushes a Homebrew formula to `rtbrick/homebrew-tap`
+
+=== Step 4: Test the Install Script
+
+[source,sh]
+----
+# Test against the pre-release
+curl -fsSL https://raw.githubusercontent.com/rtbrick/tools/main/install.sh | sudo bash -s -- --version v0.0.1-rc.1
+
+# Verify
+rtb-buddy version
+----
+
+=== Step 5: Cleanup
+
+Delete the test release and tag:
+
+[source,sh]
+----
+gh release delete v0.0.1-rc.1 --yes --cleanup-tag
+----
+
+=== Quick Reference
+
+|===
+| Command | What it tests
+
+| `make snapshot`
+| Local cross-compilation, archives, checksums
+
+| Push branch + open PR
+| CI workflow (lint + test)
+
+| `git tag v0.0.1-rc.1 && git push --tags`
+| Full release pipeline (build + publish + Homebrew)
+
+| `curl ... \| sudo bash -s -- --version v0.0.1-rc.1`
+| Install script (download + checksum + install)
+
+| `rtb-buddy version`
+| Version injection via ldflags
+|===
+
+== License
+
+BSD 3-Clause License — see the LICENSE file for details.
+
+Copyright (c) 2026, RtBrick
+
+=== SPDX Identifier
+
+`BSD-3-Clause`
