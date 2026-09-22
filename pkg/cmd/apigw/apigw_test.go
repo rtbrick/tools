@@ -173,16 +173,15 @@ func TestGenerateTokenCmd(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "valid token without name",
+			args:    []string{"token", "--priv", privPath, "--sub", "user1", "--preferred-username", "testuser"},
+			wantErr: false,
+		},
+		{
 			name:    "missing sub",
 			args:    []string{"token", "--priv", privPath, "--name", "Test User", "--preferred-username", "testuser"},
 			wantErr: true,
 			errMsg:  "required flag(s) \"sub\" not set",
-		},
-		{
-			name:    "missing name",
-			args:    []string{"token", "--priv", privPath, "--sub", "user1", "--preferred-username", "testuser"},
-			wantErr: true,
-			errMsg:  "required flag(s) \"name\" not set",
 		},
 		{
 			name:    "missing preferred-username",
