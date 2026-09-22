@@ -1,6 +1,6 @@
 = rtb-buddy
 
-Multipurpose helper tool for the RtBrick fullstack.
+Multipurpose tool for the RtBrick Full Stack Network Operating System (RBFS).
 
 == Installation
 
@@ -60,11 +60,11 @@ source <(rtb-buddy completion bash)
 
 === apigwd
 
-APIGWD relevant commands.
+APIGWD related commands.
 
 ==== apigw generate jwks
 
-Generate an RSA key pair as two JWKS files.
+Generates an RSA key pair as two JWKS files.
 
 * `--priv` — output path for the private JWKS (default: `apigw-jwks-priv.json`)
 * `--pub` — output path for the public JWKS (default: `apigw-jwks.json`)
@@ -79,9 +79,9 @@ rtb-buddy apigw generate jwks
 rtb-buddy apigw generate jwks --kid "prod" --priv prod-jwks-priv.json --pub prod-jwks.json
 ----
 
-=== apigw generate token
+==== apigw generate token
 
-Generate a signed JWT. The private key is read from the JWKS file.
+Generates a signed JWT. The private key is read from the JWKS file.
 
 * `--priv` — private JWKS file path (default: `apigw-jwks-priv.json`)
 * `--kid` — key ID to select from the JWKS (empty = first key)
@@ -147,13 +147,13 @@ LI X1 mTLS certificate management commands for Lawful Intercept.
 
 ==== mTLS Setup
 
-LI X1 uses mutual TLS (mTLS) between ADMF (Administrative Function / management system) and RBFS (network device).
+LI X1 uses mutual TLS (mTLS) between ADMF (Administrative Function, the LI management system) and RBFS (network element, the network device).
 
 CA:: Trust anchor — issues certificates for all components
 RBFS:: Server — presents certificate, verifies ADMF clients
 ADMF:: Client — presents certificate, verifies RBFS server
 
-===== Generate certificates
+===== Generating the CA and certificates
 
 [source,sh]
 ----
@@ -176,7 +176,7 @@ Both sides need `ca.crt` to verify each other's certificates.
 
 ==== lix1 generate ca
 
-Generate a root CA certificate and private key.
+Generates a root CA certificate and private key.
 
 * `--ca-crt` — CA certificate output path (default: `ca.crt`)
 * `--ca-crt-key` — CA private key output path (default: `ca.key`)
@@ -193,7 +193,7 @@ rtb-buddy lix1 generate ca --cn "My CA" --org "My Org" --ou "Eng" --ca-crt my-ca
 
 ==== lix1 generate cert
 
-Generate a certificate signed by the CA.
+Generates a certificate signed by the CA.
 
 * `--ca-crt` — CA certificate input path (default: `ca.crt`)
 * `--ca-crt-key` — CA private key input path (default: `ca.key`)
@@ -213,7 +213,7 @@ rtb-buddy lix1 generate cert --cn "RBFS" --org "RtBrick" --ou "Engineering" --cr
 
 ==== lix1 test cert
 
-Test certificate validity and chain verification.
+Validates the certificate and it's trust chain.
 
 * `--crt` — Certificate to test (required)
 * `--ca-crt` — CA certificate for chain validation (default: `ca.crt`)
