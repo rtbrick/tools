@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v0.1.1](https://github.com/rtbrick/tools/releases/tag/v0.1.1) - 2026-09-22
+
+- [`5c82ece`](https://github.com/rtbrick/tools/commit/5c82ecedf6b6d80ec27db840b88da5f8a8fd8f3d) fix: name is not required filed for token generation
+
 ## [v0.1.0](https://github.com/rtbrick/tools/releases/tag/v0.1.0) - 2026-09-21
 
 - [`174861a`](https://github.com/rtbrick/tools/commit/174861af275dc3d8dcd8418af875ccb018a1b70c) feat: implement rtb-buddy
