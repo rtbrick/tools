@@ -21,7 +21,7 @@ image:https://img.shields.io/badge/module-github.com%2Frtbrick%2Ftools-green.svg
 | Tool | Description
 
 | `rtb-buddy`
-| Multipurpose helper tool for the RtBrick fullstack. See link:cmd/rtb-buddy/README.adoc[documentation].
+| Multipurpose tool for the RtBrick Full Stack Network Operating System. See link:cmd/rtb-buddy/README.adoc[rtb-buddy documentation] for details.
 
 |===
 
