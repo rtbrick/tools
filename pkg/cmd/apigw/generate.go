@@ -71,9 +71,6 @@ func newTokenCmd() *cobra.Command {
 	if err := cmd.MarkFlagRequired(flagSub); err != nil {
 		panic(err)
 	}
-	if err := cmd.MarkFlagRequired(flagName); err != nil {
-		panic(err)
-	}
 	if err := cmd.MarkFlagRequired(flagPreferredUser); err != nil {
 		panic(err)
 	}
