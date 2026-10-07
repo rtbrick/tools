@@ -1,4 +1,4 @@
-.PHONY: all build test fmt lint vet fix clean snapshot
+.PHONY: all build test fmt lint vet fix clean snapshot shfmt shfmt-check
 
 BIN      := rtb-buddy
 MODULE   := ./cmd/rtb-buddy
@@ -31,3 +31,9 @@ fix:
 
 clean:
 	rm -f $(BIN) coverage.out
+
+shfmt:
+	go tool shfmt -l -w .
+
+shfmt-check:
+	go tool shfmt -l .
