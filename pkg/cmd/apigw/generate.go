@@ -34,8 +34,8 @@ func newJWKSCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&privPath, flagPriv, defaultPrivPath, "Output path for the private JWKS file")
-	cmd.Flags().StringVar(&pubPath, flagPub, defaultPubPath, "Output path for the public JWKS file")
+	cmd.Flags().StringVar(&privPath, flagPrivKey, defaultPrivKeyPath, "Output path for the private JWKS file")
+	cmd.Flags().StringVar(&pubPath, flagPubKey, defaultPubKeyPath, "Output path for the public JWKS file")
 	cmd.Flags().StringVar(&kid, flagKid, defaultKid, "Key ID for the JWKS entries")
 
 	return cmd
@@ -58,22 +58,18 @@ func newTokenCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&privPath, flagPriv, defaultPrivPath, "Private JWKS file path")
-	cmd.Flags().StringVar(&sub, flagSub, "", "Token subject (username)")
-	cmd.Flags().StringVar(&name, flagName, "", "Name claim")
+	cmd.Flags().StringVar(&privPath, flagPrivKey, defaultPrivKeyPath, "Private JWKS file path")
+	cmd.Flags().StringVar(&sub, flagSub, defaultSub, "Token subject (username)")
+	cmd.Flags().StringVar(&name, flagName, defaultName, "Name claim")
 	cmd.Flags().StringVar(&preferredUser, flagPreferredUser, "", "Preferred username claim")
-	cmd.Flags().StringVar(&scope, flagScope, "", "Scope claim")
+	cmd.Flags().StringVar(&scope, flagScope, defaultScope, "Scope claim")
 	cmd.Flags().StringVar(&iss, flagIss, defaultIssuer, "Token issuer")
 	cmd.Flags().StringVar(&kid, flagKid, "", "Key ID to select from the JWKS (empty = first key)")
 	cmd.Flags().StringVar(&overrideKid, flagOverrideKid, "", "Override the kid in the JWT header")
 	cmd.Flags().DurationVar(&dur, flagDur, defaultDuration, "Token duration")
 
-	if err := cmd.MarkFlagRequired(flagSub); err != nil {
-		panic(err)
-	}
-	if err := cmd.MarkFlagRequired(flagPreferredUser); err != nil {
-		panic(err)
-	}
+	_ = cmd.MarkFlagRequired(flagSub)
+	_ = cmd.MarkFlagRequired(flagPreferredUser)
 
 	return cmd
 }
@@ -100,9 +96,7 @@ func newTLSCmd() *cobra.Command {
 	cmd.Flags().StringVar(&org, flagOrg, "", "Organization name for the certificate")
 	cmd.Flags().StringSliceVar(&hosts, flagHost, []string{"localhost"}, "Hostnames/IPs to include in the certificate SANs")
 
-	if err := cmd.MarkFlagRequired(flagOrg); err != nil {
-		panic(err)
-	}
+	_ = cmd.MarkFlagRequired(flagOrg)
 
 	return cmd
 }
