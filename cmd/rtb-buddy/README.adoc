@@ -4,6 +4,15 @@ Multipurpose tool for the RtBrick Full Stack Network Operating System (RBFS).
 
 == Installation
 
+=== Quick Install
+
+.curl installer
+[source,sh]
+----
+curl -fsSL https://raw.githubusercontent.com/rtbrick/tools/main/install_rtb_buddy.sh | sudo bash
+----
+This detects your OS and architecture, downloads the latest release from GitHub, verifies the checksum, and installs rtb-buddy to /usr/local/bin.
+
 === From Source
 
 .Requires Go 1.27+
