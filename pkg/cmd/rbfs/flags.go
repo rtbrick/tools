@@ -11,6 +11,8 @@ const (
 	flagAuthMode    = "auth-mode"
 	flagPath        = "path"
 	flagPathShort   = "p"
+	flagFile        = "file"
+	flagFileShort   = "f"
 
 	// Unexported aliases to shared flags
 	flagPrivKey       = flags.FlagPrivKey
