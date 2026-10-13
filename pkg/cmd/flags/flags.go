@@ -15,7 +15,7 @@ const (
 	FlagPreferredUser = "preferred-username"
 
 	DefaultKid         = "access"
-	DefaultIssuer      = "rtbrick"
+	DefaultIssuer      = "rtbrick-buddy"
 	DefaultDuration    = 30 * time.Second
 	DefaultPrivKeyPath = "apigw-jwks-priv.json"
 	DefaultPubKeyPath  = "apigw-jwks.json"

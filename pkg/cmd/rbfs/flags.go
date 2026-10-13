@@ -24,7 +24,7 @@ const (
 	flagPreferredUser = flags.FlagPreferredUser
 	flagPubKey        = flags.FlagPubKey
 
-	defaultAuthMode    = "http"
+	defaultAuthMode    = false
 	defaultPrivKeyPath = flags.DefaultPrivKeyPath
 	defaultKid         = flags.DefaultKid
 	defaultScope       = flags.DefaultScope
