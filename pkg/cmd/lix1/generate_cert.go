@@ -3,6 +3,7 @@ package lix1
 import (
 	"crypto/x509/pkix"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/rtbrick/tools/pkg/generator"
@@ -10,8 +11,10 @@ import (
 )
 
 func newGenerateCertCmd() *cobra.Command {
-	var caCrt, caCrtKey, crt, crtKey, cn, org, ou string
+	var caCrt, caCrtKey, crt, crtKey, cn, org, ou, uid, x1Role, x1Identifier string
 	var duration time.Duration
+	var dnsNames []string
+	var ipAddresses []net.IP
 
 	cmd := &cobra.Command{
 		Use:   "cert",
@@ -28,7 +31,18 @@ func newGenerateCertCmd() *cobra.Command {
 				CommonName:         cn,
 			}
 
-			err = generator.GenerateCert(ca.Certificate, ca.PrivateKey, crt, crtKey, subject, duration)
+			err = generator.GenerateCert(
+				ca.Certificate,
+				ca.PrivateKey,
+				crt,
+				crtKey,
+				subject,
+				duration,
+				generator.UserID(uid),
+				generator.DNSNames(dnsNames...),
+				generator.IPAddresses(ipAddresses...),
+				generator.ETSIX1BindingIdentifier(x1Role, x1Identifier),
+			)
 			if err != nil {
 				return err
 			}
@@ -48,7 +62,12 @@ func newGenerateCertCmd() *cobra.Command {
 	cmd.Flags().StringVar(&cn, flagCN, "", "Common Name for the certificate")
 	cmd.Flags().StringVar(&org, flagOrg, "", "Organization for the certificate")
 	cmd.Flags().StringVar(&ou, flagOU, "", "Organizational Unit for the certificate")
+	cmd.Flags().StringVar(&uid, flagUID, "", "User ID (UID) attribute added to the subject distinguished name of a client certificate")
+	cmd.Flags().StringSliceVar(&dnsNames, flagDNSName, dnsNames, "DNS name to be added to the certificate")
+	cmd.Flags().IPSliceVar(&ipAddresses, flagIPAddress, ipAddresses, "IP addresses to be added to the certificate")
 	cmd.Flags().DurationVar(&duration, flagDuration, defaultDuration, "Certificate validity duration")
+	cmd.Flags().StringVar(&x1Identifier, flagX1Identifier, "", "ETSI X1 identifier to be added to the client certificate")
+	cmd.Flags().StringVar(&x1Role, flagX1Role, "", "ETSI X1 role to be added to the client certificate")
 
 	if err := cmd.MarkFlagRequired(flagCrt); err != nil {
 		panic(err)
@@ -65,6 +84,6 @@ func newGenerateCertCmd() *cobra.Command {
 	if err := cmd.MarkFlagRequired(flagOU); err != nil {
 		panic(err)
 	}
-
+	cmd.MarkFlagsRequiredTogether(flagX1Identifier, flagX1Role)
 	return cmd
 }
