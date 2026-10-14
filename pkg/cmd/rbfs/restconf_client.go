@@ -58,7 +58,7 @@ func newRestConfClient(basepath string, opts ...restconfOption) (*restConfClient
 	baseURL := &url.URL{
 		Scheme: scheme,
 		Host:   c.basepath + ":" + port,
-		Path:   "/api/v1/rbfs/elements/" + c.element + "/services/restconfd/proxy/restconf/data",
+		Path:   "/api/v1/rbfs/elements/" + c.element + "/services/restconfd/proxy/restconf/data/",
 	}
 
 	hc := httpclient.NewClient(baseURL, httpclient.WithInsecureSkipVerify())
