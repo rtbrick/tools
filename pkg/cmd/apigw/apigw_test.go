@@ -70,35 +70,35 @@ func TestGenerateJWKSCmd(t *testing.T) {
 			name:     "default flags",
 			args:     []string{"jwks"},
 			wantErr:  false,
-			wantPriv: defaultPrivPath,
-			wantPub:  defaultPubPath,
+			wantPriv: defaultPrivKeyPath,
+			wantPub:  defaultPubKeyPath,
 		},
 		{
 			name:     "custom kid",
 			args:     []string{"jwks", "--kid", "prod"},
 			wantErr:  false,
-			wantPriv: defaultPrivPath,
-			wantPub:  defaultPubPath,
+			wantPriv: defaultPrivKeyPath,
+			wantPub:  defaultPubKeyPath,
 		},
 		{
 			name:     "custom paths",
-			args:     []string{"jwks", "--priv", "testdata/priv.json", "--pub", "testdata/pub.json"},
+			args:     []string{"jwks", "--priv-key", "testdata/priv.json", "--pub-key", "testdata/pub.json"},
 			wantErr:  false,
 			wantPriv: "testdata/priv.json",
 			wantPub:  "testdata/pub.json",
 		},
 		{
 			name:    "invalid priv path",
-			args:    []string{"jwks", "--priv", "/nonexistent/dir/priv.json"},
+			args:    []string{"jwks", "--priv-key", "/nonexistent/dir/priv.json"},
 			wantErr: true,
 			errMsg:  "no such file or directory",
 		},
 		{
 			name:     "invalid pub path",
-			args:     []string{"jwks", "--pub", "/nonexistent/dir/pub.json"},
+			args:     []string{"jwks", "--pub-key", "/nonexistent/dir/pub.json"},
 			wantErr:  true,
 			errMsg:   "no such file or directory",
-			wantPriv: defaultPrivPath,
+			wantPriv: defaultPrivKeyPath,
 		},
 	}
 
@@ -135,7 +135,7 @@ func TestGenerateJWKSCmd_CreatesValidJWKS(t *testing.T) {
 	pubPath := filepath.Join(dir, "pub.json")
 
 	_, err := runCmd(t, NewGenerateCmd(), "jwks",
-		"--priv", privPath, "--pub", pubPath, "--kid", "test")
+		"--priv-key", privPath, "--pub-key", pubPath, "--kid", "test")
 	require.NoError(t, err)
 
 	// Verify private JWKS
@@ -169,40 +169,40 @@ func TestGenerateTokenCmd(t *testing.T) {
 	}{
 		{
 			name:    "valid token",
-			args:    []string{"token", "--priv", privPath, "--sub", "user1", "--name", "Test User", "--preferred-username", "testuser"},
+			args:    []string{"token", "--priv-key", privPath, "--sub", "user1", "--name", "Test User", "--preferred-username", "testuser"},
 			wantErr: false,
 		},
 		{
 			name:    "valid token without name",
-			args:    []string{"token", "--priv", privPath, "--sub", "user1", "--preferred-username", "testuser"},
+			args:    []string{"token", "--priv-key", privPath, "--sub", "user1", "--preferred-username", "testuser"},
 			wantErr: false,
 		},
 		{
 			name:    "missing sub",
-			args:    []string{"token", "--priv", privPath, "--name", "Test User", "--preferred-username", "testuser"},
+			args:    []string{"token", "--priv-key", privPath, "--name", "Test User", "--preferred-username", "testuser"},
 			wantErr: true,
 			errMsg:  "required flag(s) \"sub\" not set",
 		},
 		{
 			name:    "missing preferred-username",
-			args:    []string{"token", "--priv", privPath, "--sub", "user1", "--name", "Test User"},
+			args:    []string{"token", "--priv-key", privPath, "--sub", "user1", "--name", "Test User"},
 			wantErr: true,
 			errMsg:  "required flag(s) \"preferred-username\" not set",
 		},
 		{
 			name:    "missing all required",
-			args:    []string{"token", "--priv", privPath},
+			args:    []string{"token", "--priv-key", privPath},
 			wantErr: true,
 			errMsg:  "required flag(s)",
 		},
 		{
 			name:    "invalid priv path",
-			args:    []string{"token", "--priv", "/nonexistent/priv.json", "--sub", "user1", "--name", "Test User", "--preferred-username", "testuser"},
+			args:    []string{"token", "--priv-key", "/nonexistent/priv.json", "--sub", "user1", "--name", "Test User", "--preferred-username", "testuser"},
 			wantErr: true,
 		},
 		{
 			name:    "custom kid and override-kid",
-			args:    []string{"token", "--priv", privPath, "--sub", "user1", "--name", "Test User", "--preferred-username", "testuser", "--kid", "access", "--override-kid", "rotated"},
+			args:    []string{"token", "--priv-key", privPath, "--sub", "user1", "--name", "Test User", "--preferred-username", "testuser", "--kid", "access", "--override-kid", "rotated"},
 			wantErr: false,
 		},
 	}

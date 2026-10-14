@@ -1,26 +1,33 @@
 package apigw
 
-import "time"
+import (
+	"github.com/rtbrick/tools/pkg/cmd/flags"
+)
 
 const (
-	flagPriv          = "priv"
-	flagPub           = "pub"
-	flagKid           = "kid"
-	flagOverrideKid   = "override-kid"
-	flagSub           = "sub"
-	flagName          = "name"
-	flagPreferredUser = "preferred-username"
-	flagScope         = "scope"
-	flagIss           = "iss"
-	flagDur           = "dur"
-	flagCert          = "cert"
-	flagKey           = "key"
-	flagOrg           = "org"
-	flagHost          = "host"
+	flagCert = "cert"
+	flagKey  = "key"
+	flagOrg  = "org"
+	flagHost = "host"
 
-	defaultKid      = "access"
-	defaultIssuer   = "rtbrick"
-	defaultDuration = 1 * time.Hour
-	defaultPrivPath = "apigw-jwks-priv.json"
-	defaultPubPath  = "apigw-jwks.json"
+	// Unexported aliases to shared flags
+	flagKid           = flags.FlagKid
+	flagSub           = flags.FlagSub
+	flagName          = flags.FlagName
+	flagScope         = flags.FlagScope
+	flagIss           = flags.FlagIss
+	flagDur           = flags.FlagDur
+	flagPrivKey       = flags.FlagPrivKey
+	flagPubKey        = flags.FlagPubKey
+	flagOverrideKid   = flags.FlagOverrideKid
+	flagPreferredUser = flags.FlagPreferredUser
+
+	defaultKid         = flags.DefaultKid
+	defaultIssuer      = flags.DefaultIssuer
+	defaultDuration    = flags.DefaultDuration
+	defaultPrivKeyPath = flags.DefaultPrivKeyPath
+	defaultPubKeyPath  = flags.DefaultPubKeyPath
+	defaultScope       = flags.DefaultScope
+	defaultSub         = flags.DefaultSub
+	defaultName        = flags.DefaultName
 )

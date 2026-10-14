@@ -85,7 +85,7 @@ func newInspectTokenCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&pubPath, flagPub, defaultPubPath, "Public JWKS file path for signature verification")
+	cmd.Flags().StringVar(&pubPath, flagPubKey, defaultPubKeyPath, "Public JWKS file path for signature verification")
 	cmd.Flags().StringVar(&overrideKid, flagOverrideKid, "", "Override the kid for key lookup in the JWKS")
 
 	return cmd

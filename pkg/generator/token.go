@@ -87,12 +87,10 @@ func GenerateToken(privPath, sub, name, preferredUser, scope, iss, selectKid, ov
 		Name:          name,
 		PreferredUser: preferredUser,
 		Scope:         scope,
-		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   sub,
-			Issuer:    iss,
-			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(now.Add(dur)),
-		},
+		Subject:       sub,
+		Issuer:        iss,
+		IssuedAt:      jwt.NewNumericDate(now),
+		ExpiresAt:     jwt.NewNumericDate(now.Add(dur)),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)

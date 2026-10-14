@@ -67,7 +67,7 @@ source <(rtb-buddy completion bash)
 
 == Commands
 
-=== apigwd
+=== apigw
 
 APIGWD related commands.
 
@@ -75,8 +75,8 @@ APIGWD related commands.
 
 Generates an RSA key pair as two JWKS files.
 
-* `--priv` — output path for the private JWKS (default: `apigw-jwks-priv.json`)
-* `--pub` — output path for the public JWKS (default: `apigw-jwks.json`)
+* `--priv-key` — output path for the private JWKS (default: `apigw-jwks-priv.json`)
+* `--pub-key` — output path for the public JWKS (default: `apigw-jwks.json`)
 * `--kid` — key ID for the JWKS entries (default: `access`)
 
 The private JWKS contains two entries (private key + public key, same KID).
@@ -85,22 +85,22 @@ The public JWKS contains one entry (public key only, for distribution).
 [source,sh]
 ----
 rtb-buddy apigw generate jwks
-rtb-buddy apigw generate jwks --kid "prod" --priv prod-jwks-priv.json --pub prod-jwks.json
+rtb-buddy apigw generate jwks --kid "prod" --priv-key prod-jwks-priv.json --pub-key prod-jwks.json
 ----
 
 ==== apigw generate token
 
 Generates a signed JWT. The private key is read from the JWKS file.
 
-* `--priv` — private JWKS file path (default: `apigw-jwks-priv.json`)
+* `--priv-key` — private JWKS file path (default: `apigw-jwks-priv.json`)
 * `--kid` — key ID to select from the JWKS (empty = first key)
 * `--override-kid` — override the kid in the JWT header (default: use the JWKS entry's kid)
 * `--sub` — token subject (required)
 * `--name` — name claim (required)
 * `--preferred-username` — preferred username claim (required)
-* `--scope` — scope claim (default: `user`)
+* `--scope` — scope claim (default: `supervisor`)
 * `--iss` — issuer (default: `rtbrick`)
-* `--dur` — token duration (default: `1h`)
+* `--dur` — token duration (default: `30s`)
 [source,sh]
 ----
 # Single key in JWKS — --kid not needed
@@ -137,7 +137,7 @@ rtb-buddy apigw generate tls --org "rtbrick"
 
 Decode a JWT from stdin. Verify signature if public JWKS is available. Reports expiration status.
 
-* `--pub` — public JWKS file path (default: `apigw-jwks.json`)
+* `--pub-key` — public JWKS file path for signature verification (default: `apigw-jwks.json`)
 * `--override-kid` — override the kid for key lookup in the JWKS
 [source,sh]
 ----
@@ -248,4 +248,71 @@ Status: VALID (expires in 87600h0m0s)
 
 Verifying certificate chain against CA...
 Chain verification: OK
+----
+
+=== rbfs
+
+RBF router management commands.
+
+==== rbfs config restconf
+
+RESTCONF operations for RBFS routers.
+
+===== rbfs config restconf get
+
+Get RESTCONF configuration from an RBFS router.
+
+* `--auth-mode` — Use HTTPS with JWT authentication (port 12321); default is HTTP (port 19091)
+* `--element` — Element name (defaults to basepath)
+* `-o, --output` — Output file path (default: print to stdout)
+* `-p, --path` — RESTCONF data path (e.g. `rtbrick-config:lldp`, default: full config)
+* `--priv-key` — Private JWKS file path for token generation (default: `apigw-jwks-priv.json`)
+* `--kid` — Key ID to select from the JWKS (default: `access`)
+* `--sub` — Token subject (default: `78228339`)
+* `--name` — Token name claim (default: `rtb-buddy`)
+* `--scope` — Token scope (default: `supervisor`)
+* `--iss` — Token issuer (default: `rtbrick`)
+* `--dur` — Token duration (default: `30s`)
+
+[source,sh]
+----
+# Get full config to stdout
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net
+
+# Get specific path to stdout
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:lldp
+
+# Get specific path to file
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:system -o system.json
+
+# HTTPS with JWT
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net --auth-mode -p rtbrick-config:system
+----
+
+===== rbfs config restconf put
+
+Put RESTCONF configuration to an RBFS router.
+
+* `--auth-mode` — Use HTTPS with JWT authentication (port 12321); default is HTTP (port 19091)
+* `--element` — Element name (defaults to basepath)
+* `-f, --file` — Input file path (default: stdin)
+* `-p, --path` — RESTCONF data path (e.g. `rtbrick-config:system`)
+* `--priv-key` — Private JWKS file path for token generation (default: `apigw-jwks-priv.json`)
+* `--kid` — Key ID to select from the JWKS (default: `access`)
+* `--sub` — Token subject (default: `78228339`)
+* `--name` — Token name claim (default: `rtb-buddy`)
+* `--scope` — Token scope (default: `supervisor`)
+* `--iss` — Token issuer (default: `rtbrick`)
+* `--dur` — Token duration (default: `30s`)
+
+[source,sh]
+----
+# Put config from stdin
+cat config.json | rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:system
+
+# Put config from file
+rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:system -f config.json
+
+# HTTPS with JWT
+rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net --auth-mode -p rtbrick-config:system -f config.json
 ----
