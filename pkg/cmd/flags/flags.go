@@ -3,6 +3,9 @@ package flags
 import "time"
 
 const (
+	FlagCert          = "cert"
+	FlagCertKey       = "cert-key"
+	FlagOutput        = "output"
 	FlagKid           = "kid"
 	FlagSub           = "sub"
 	FlagName          = "name"

@@ -1,0 +1,53 @@
+==== rbfs lix1d
+
+Generate RBFS LI X1 mTLS CLI commands from certificates.
+
+===== rbfs lix1d server certificate
+
+Generate server certificate and key configuration commands.
+
+* `--cert` — Server certificate PEM file (required)
+* `--cert-key` — Server private key PEM file (required)
+
+[source,sh]
+----
+rtb-buddy rbfs lix1d server certificate --cert server.crt --cert-key server.key
+----
+
+Outputs:
+```
+set lawful-intercept protocol x1 mutual-tls server certificate <base64>
+set lawful-intercept protocol x1 mutual-tls server key-plain-text <base64>
+```
+
+===== rbfs lix1d server client-ca
+
+Generate server client CA configuration command.
+
+* `--cert` — Client CA certificate PEM file (required)
+
+[source,sh]
+----
+rtb-buddy rbfs lix1d server client-ca --cert client-ca.crt
+----
+
+Outputs:
+```
+set lawful-intercept protocol x1 mutual-tls server client-ca <base64>
+```
+
+===== rbfs lix1d client root-ca
+
+Generate client root CA configuration command.
+
+* `--cert` — Root CA certificate PEM file (required)
+
+[source,sh]
+----
+rtb-buddy rbfs lix1d client root-ca --cert root-ca.crt
+----
+
+Outputs:
+```
+set lawful-intercept protocol x1 mutual-tls client root-ca <base64>
+```

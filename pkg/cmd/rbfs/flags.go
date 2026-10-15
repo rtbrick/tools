@@ -5,6 +5,8 @@ import (
 )
 
 const (
+	flagCert        = flags.FlagCert
+	flagCertKey     = flags.FlagCertKey
 	flagElement     = "element"
 	flagOutput      = "output"
 	flagOutputShort = "o"
@@ -15,16 +17,13 @@ const (
 	flagFileShort   = "f"
 
 	// Unexported aliases to shared flags
-	flagPrivKey       = flags.FlagPrivKey
-	flagKid           = flags.FlagKid
-	flagSub           = flags.FlagSub
-	flagName          = flags.FlagName
-	flagScope         = flags.FlagScope
-	flagIss           = flags.FlagIss
-	flagDur           = flags.FlagDur
-	flagOverrideKid   = flags.FlagOverrideKid
-	flagPreferredUser = flags.FlagPreferredUser
-	flagPubKey        = flags.FlagPubKey
+	flagPrivKey = flags.FlagPrivKey
+	flagKid     = flags.FlagKid
+	flagSub     = flags.FlagSub
+	flagName    = flags.FlagName
+	flagScope   = flags.FlagScope
+	flagIss     = flags.FlagIss
+	flagDur     = flags.FlagDur
 
 	defaultAuthMode    = false
 	defaultPrivKeyPath = flags.DefaultPrivKeyPath
