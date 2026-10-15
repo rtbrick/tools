@@ -1,0 +1,68 @@
+=== rbfs
+
+RBF router management commands.
+
+==== rbfs config restconf
+
+RESTCONF operations for RBFS routers.
+
+===== rbfs config restconf get
+
+Get RESTCONF configuration from an RBFS router.
+
+* `--auth-mode` — Use HTTPS with JWT authentication (port 12321); default is HTTP (port 19091)
+* `--element` — Element name (defaults to basepath)
+* `-o, --output` — Output file path (default: print to stdout)
+* `-p, --path` — RESTCONF data path (e.g. `rtbrick-config:lldp`, default: full config)
+* `--priv-key` — Private JWKS file path for token generation (default: `apigw-jwks-priv.json`)
+* `--kid` — Key ID to select from the JWKS (default: `access`)
+* `--sub` — Token subject (default: `78228339`)
+* `--name` — Token name claim (default: `rtb-buddy`)
+* `--scope` — Token scope (default: `supervisor`)
+* `--iss` — Token issuer (default: `rtbrick`)
+* `--dur` — Token duration (default: `30s`)
+
+[source,sh]
+----
+# Get full config to stdout
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net
+
+# Get specific path to stdout
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:lldp
+
+# Get specific path to file
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:system -o system.json
+
+# HTTPS with JWT
+rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net --auth-mode -p rtbrick-config:system
+----
+
+===== rbfs config restconf put
+
+Put RESTCONF configuration to an RBFS router.
+
+* `--auth-mode` — Use HTTPS with JWT authentication (port 12321); default is HTTP (port 19091)
+* `--element` — Element name (defaults to basepath)
+* `-f, --file` — Input file path (default: stdin)
+* `-p, --path` — RESTCONF data path (e.g. `rtbrick-config:system`)
+* `--priv-key` — Private JWKS file path for token generation (default: `apigw-jwks-priv.json`)
+* `--kid` — Key ID to select from the JWKS (default: `access`)
+* `--sub` — Token subject (default: `78228339`)
+* `--name` — Token name claim (default: `rtb-buddy`)
+* `--scope` — Token scope (default: `supervisor`)
+* `--iss` — Token issuer (default: `rtbrick`)
+* `--dur` — Token duration (default: `30s`)
+
+[source,sh]
+----
+# Put config from stdin
+cat config.json | rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:system
+
+# Put config from file
+rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-config:system -f config.json
+
+# HTTPS with JWT
+rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net --auth-mode -p rtbrick-config:system -f config.json
+----
+
+include::rbfs_lix1.adoc[]
