@@ -1,10 +1,10 @@
 ==== rbfs lix1d
 
-Generate RBFS LI X1 mTLS CLI commands from certificates.
+Generates RBFS LI X1 mTLS CLI `set` commands from certificates.
 
 ===== rbfs lix1d server certificate
 
-Generate server certificate and key configuration commands.
+Generates server certificate and key configuration commands.
 
 * `--cert` — Server certificate PEM file (required)
 * `--cert-key` — Server private key PEM file (required)
@@ -22,7 +22,7 @@ set lawful-intercept protocol x1 mutual-tls server key-plain-text <base64>
 
 ===== rbfs lix1d server client-ca
 
-Generate server client CA configuration command.
+Generates server client CA configuration command.
 
 * `--cert` — Client CA certificate PEM file (required)
 
@@ -38,7 +38,7 @@ set lawful-intercept protocol x1 mutual-tls server client-ca <base64>
 
 ===== rbfs lix1d client root-ca
 
-Generate client root CA configuration command.
+Generates client root CA configuration command.
 
 * `--cert` — Root CA certificate PEM file (required)
 

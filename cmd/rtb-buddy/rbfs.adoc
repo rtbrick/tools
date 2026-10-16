@@ -8,7 +8,7 @@ RESTCONF operations for RBFS routers.
 
 ===== rbfs config restconf get
 
-Get RESTCONF configuration from an RBFS router.
+Gets RESTCONF configuration from an RBFS router.
 
 * `--auth-mode` — Use HTTPS with JWT authentication (port 12321); default is HTTP (port 19091)
 * `--element` — Element name (defaults to basepath)
@@ -39,7 +39,7 @@ rtb-buddy rbfs config restconf get ufi29.q2c.u35.r3.nbg.rtbrick.net --auth-mode 
 
 ===== rbfs config restconf put
 
-Put RESTCONF configuration to an RBFS router.
+Puts RESTCONF configuration to an RBFS router.
 
 * `--auth-mode` — Use HTTPS with JWT authentication (port 12321); default is HTTP (port 19091)
 * `--element` — Element name (defaults to basepath)
