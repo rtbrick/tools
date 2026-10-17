@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	flagCert = "cert"
+	flagCert = flags.FlagCert
 	flagKey  = "key"
 	flagOrg  = "org"
 	flagHost = "host"

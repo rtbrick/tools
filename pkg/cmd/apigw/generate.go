@@ -68,9 +68,6 @@ func newTokenCmd() *cobra.Command {
 	cmd.Flags().StringVar(&overrideKid, flagOverrideKid, "", "Override the kid in the JWT header")
 	cmd.Flags().DurationVar(&dur, flagDur, defaultDuration, "Token duration")
 
-	_ = cmd.MarkFlagRequired(flagSub)
-	_ = cmd.MarkFlagRequired(flagPreferredUser)
-
 	return cmd
 }
 

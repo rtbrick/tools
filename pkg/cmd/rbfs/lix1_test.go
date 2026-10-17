@@ -72,7 +72,7 @@ func TestServerCertificateCmd(t *testing.T) {
 
 	certPath, keyPath := createTempCert(t, tmpDir, "server", false)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	output, err := runCmd(t, cmd, "server", "certificate", "--cert", certPath, "--cert-key", keyPath)
 	require.NoError(t, err)
 	require.Contains(t, output, "set lawful-intercept protocol x1 mutual-tls server certificate ")
@@ -85,7 +85,7 @@ func TestServerCertificateCmd_CertKeyMismatch(t *testing.T) {
 	certPath1, _ := createTempCert(t, tmpDir, "server1", false)
 	_, keyPath2 := createTempCert(t, tmpDir, "server2", false)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "certificate", "--cert", certPath1, "--cert-key", keyPath2)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "do not match")
@@ -96,7 +96,7 @@ func TestServerCertificateCmd_CARejected(t *testing.T) {
 
 	certPath, keyPath := createTempCert(t, tmpDir, "ca", true)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "certificate", "--cert", certPath, "--cert-key", keyPath)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "is a CA certificate")
@@ -107,7 +107,7 @@ func TestServerCertificateCmd_MissingCert(t *testing.T) {
 
 	_, keyPath := createTempCert(t, tmpDir, "server", false)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "certificate", "--cert-key", keyPath)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "required flag")
@@ -118,7 +118,7 @@ func TestServerCertificateCmd_MissingKey(t *testing.T) {
 
 	certPath, _ := createTempCert(t, tmpDir, "server", false)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "certificate", "--cert", certPath)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "required flag")
@@ -129,7 +129,7 @@ func TestServerClientCACmd(t *testing.T) {
 
 	certPath, _ := createTempCert(t, tmpDir, "client-ca", true)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	output, err := runCmd(t, cmd, "server", "client-ca", "--cert", certPath)
 	require.NoError(t, err)
 	require.Contains(t, output, "set lawful-intercept protocol x1 mutual-tls server client-ca ")
@@ -140,14 +140,14 @@ func TestServerClientCACmd_NonCARejected(t *testing.T) {
 
 	certPath, _ := createTempCert(t, tmpDir, "server", false)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "client-ca", "--cert", certPath)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "not a CA certificate")
 }
 
 func TestServerClientCACmd_MissingCert(t *testing.T) {
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "client-ca")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "required flag")
@@ -158,7 +158,7 @@ func TestClientRootCACmd(t *testing.T) {
 
 	certPath, _ := createTempCert(t, tmpDir, "root-ca", true)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	output, err := runCmd(t, cmd, "client", "root-ca", "--cert", certPath)
 	require.NoError(t, err)
 	require.Contains(t, output, "set lawful-intercept protocol x1 mutual-tls client root-ca ")
@@ -169,14 +169,14 @@ func TestClientRootCACmd_NonCARejected(t *testing.T) {
 
 	certPath, _ := createTempCert(t, tmpDir, "server", false)
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "client", "root-ca", "--cert", certPath)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "not a CA certificate")
 }
 
 func TestClientRootCACmd_MissingCert(t *testing.T) {
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "client", "root-ca")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "required flag")
@@ -188,14 +188,14 @@ func TestInvalidPEMFile(t *testing.T) {
 	badPath := filepath.Join(tmpDir, "bad.pem")
 	require.NoError(t, os.WriteFile(badPath, []byte("not a pem"), 0o644))
 
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "client-ca", "--cert", badPath)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "not a valid PEM")
 }
 
 func TestMissingFile(t *testing.T) {
-	cmd := NewLix1dCmd()
+	cmd := NewLix1Cmd()
 	_, err := runCmd(t, cmd, "server", "client-ca", "--cert", "/nonexistent/path.crt")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "read file")
