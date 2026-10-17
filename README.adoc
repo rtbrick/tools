@@ -231,38 +231,3 @@ Copyright (c) 2026, RtBrick
 === SPDX Identifier
 
 `BSD-3-Clause`
-
-
-
-
-rtb-buddy lix1 generate ca --cn rtbrick-lab --org rtbrick --ou devops
-rtb-buddy lix1 generate ca --cn rtbrick-lab --org rtbrick --ou devops --ca-crt client-ca.crt --ca-crt-key client-ca.key
-
-rtb-buddy lix1 generate cert --cn ufi31 --org rtbrick --ou devops --crt ufi31.crt --crt-key ufi31.key
-
-rtb-buddy lix1 generate cert --cn client1 --org rtbrick --ou devops --ca-crt client-ca.crt --ca-crt-key client-ca.key --crt client1.crt --crt-key client1.key
-
-
-set lawful-intercept protocol x1 mutual-tls server certificate LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVjVENDQTFtZ0F3SUJBZ0lDQm5vd0RRWUpLb1pJaHZjT...
-set lawful-intercept protocol x1 mutual-tls server key-plain-text LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktL...
-set lawful-intercept protocol x1 mutual-tls client root-ca LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURYakNDQWthZ0F3SUJBZ0lSQVBtUjVoRWxtZ0NOaVliWVZ
-jZXV6Yll3RFFZSktvWklodmNOQVFFTEJRQXcKT1RFUU1BNEdBMVVFQ2hNSGNuUmljbWxqYXpFUE1BMEdBMVVFQ3hNR1pHVjJiM0J6TV
-JRd0VnWURWUVFERXd0eQpkR0p5YVdOckxXeGhZakFlRncweU5qRXdNVFF4TUR
-
-[source,sh]
-----
-curl --insecure -vvv --key client1.key --cert client1.crt --cacert ca.crt --location 'https://ufi31.q2a.u39.r3.nbg.rtbrick.net:12322/X1/NE' \
---header 'Content-Type: application/json' \
---data '<X1Request xmlns="http://uri.etsi.org/03221/X1/2017/10">
-    <x1RequestMessage xsi:type="PingRequest">
-        <admfIdentifier>ADMF-ID-01</admfIdentifier>
-        <neIdentifier>NE-ID-102</neIdentifier>
-        <messageTimestamp>2026-09-22T20:51:00Z</messageTimestamp>
-        <version>v1.12.1</version>
-        <x1TransactionId>f81d4fae-7dec-11d0-a765-00a0c91e6bf6</x1TransactionId>
-    </x1RequestMessage>
-</X1Request>'
-----
-
-
-2026/10/14 10:36:23 INFO Programm info version=0.4.0-g6daily.20261013144632+Bdevelopment.C53e4a3f0 runtime=go1.27.1
