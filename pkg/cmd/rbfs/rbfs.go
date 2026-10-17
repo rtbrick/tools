@@ -10,6 +10,6 @@ func NewRbfsCmd() *cobra.Command {
 		Short: "RBF router management",
 	}
 	cmd.AddCommand(NewConfigCmd())
-	cmd.AddCommand(NewLix1dCmd())
+	cmd.AddCommand(NewLix1Cmd())
 	return cmd
 }

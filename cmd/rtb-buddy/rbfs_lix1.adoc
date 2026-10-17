@@ -1,8 +1,8 @@
-==== rbfs lix1d
+==== rbfs lix1
 
-Generates RBFS LI X1 mTLS CLI `set` commands from certificates.
+Generates RBFS LI X1 mTLS CLI `set` commands from certificates and sends PingRequest.
 
-===== rbfs lix1d server certificate
+===== rbfs lix1 server certificate
 
 Generates server certificate and key configuration commands.
 
@@ -11,7 +11,7 @@ Generates server certificate and key configuration commands.
 
 [source,sh]
 ----
-rtb-buddy rbfs lix1d server certificate --cert server.crt --cert-key server.key
+rtb-buddy rbfs lix1 server certificate --cert server.crt --cert-key server.key
 ----
 
 Outputs:
@@ -20,7 +20,7 @@ set lawful-intercept protocol x1 mutual-tls server certificate <base64>
 set lawful-intercept protocol x1 mutual-tls server key-plain-text <base64>
 ```
 
-===== rbfs lix1d server client-ca
+===== rbfs lix1 server client-ca
 
 Generates server client CA configuration command.
 
@@ -28,7 +28,7 @@ Generates server client CA configuration command.
 
 [source,sh]
 ----
-rtb-buddy rbfs lix1d server client-ca --cert client-ca.crt
+rtb-buddy rbfs lix1 server client-ca --cert client-ca.crt
 ----
 
 Outputs:
@@ -36,7 +36,7 @@ Outputs:
 set lawful-intercept protocol x1 mutual-tls server client-ca <base64>
 ```
 
-===== rbfs lix1d client root-ca
+===== rbfs lix1 client root-ca
 
 Generates client root CA configuration command.
 
@@ -44,10 +44,42 @@ Generates client root CA configuration command.
 
 [source,sh]
 ----
-rtb-buddy rbfs lix1d client root-ca --cert root-ca.crt
+rtb-buddy rbfs lix1 client root-ca --cert root-ca.crt
 ----
 
 Outputs:
 ```
 set lawful-intercept protocol x1 mutual-tls client root-ca <base64>
+```
+
+===== rbfs lix1 ping
+
+Send X1 PingRequest to RBFS router (LI X1 over mTLS).
+
+* `--cert` — Client certificate PEM file (required)
+* `--cert-key` — Client private key PEM file (required)
+* `<path>` — Router hostname or address (required)
+
+[source,sh]
+----
+rtb-buddy rbfs lix1 ping <path> --cert client1.crt --cert-key client1.key
+----
+
+Output:
+```
+Status: 200
+Content-Type: application/xml
+Response:
+<?xml version="1.0" encoding="UTF-8"?>
+<X1Request xmlns="http://uri.etsi.org/03221/X1/2017/10">
+  <x1RequestMessage xsi:type="PingRequest">
+    <admfIdentifier>ADMF-ID-01</admfIdentifier>
+    <neIdentifier>NE-ID-102</neIdentifier>
+    <messageTimestamp>2026-01-15T12:00:00Z</messageTimestamp>
+    <version>v1.12.1</version>
+    <x1TransactionId>f81d4fae-7dec-11d0-a765-00a0c91e6bf6</x1TransactionId>
+    <pingType>basic</pingType>
+    <requestedNumberOfRepetitions>1</requestedNumberOfRepetitions>
+  </x1RequestMessage>
+</X1Request>
 ```

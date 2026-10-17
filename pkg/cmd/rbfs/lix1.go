@@ -5,9 +5,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewLix1dCmd() *cobra.Command {
+func NewLix1Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "lix1d",
+		Use:   "lix1",
 		Short: "Generate RBFS LI X1 mTLS CLI commands from certificates",
 	}
 
@@ -24,8 +24,11 @@ func NewLix1dCmd() *cobra.Command {
 	}
 	clientCmd.AddCommand(newClientRootCACmd())
 
+	pingCmd := NewLix1PingCmd()
+
 	cmd.AddCommand(serverCmd)
 	cmd.AddCommand(clientCmd)
+	cmd.AddCommand(pingCmd)
 	return cmd
 }
 
