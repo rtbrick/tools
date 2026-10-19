@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0" pages="3">
+  <diagram id="page-1" name="1-JWKS Token Generation &amp; Validation">
+    <mxGraphModel dx="2054" dy="1113" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p1t" connectable="0" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a1a2e;" value="JWKS Token Generation &amp;amp; Validation" vertex="1">
+          <mxGeometry height="40" width="500" x="550" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="p1left" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" value="rtb-buddy (client machine)&lt;br&gt;&lt;br&gt;rtb-buddy rbfs restconf get --auth-mode&lt;br&gt;  ufi12.q2a.u38.r1.blr.rtbrick.net&lt;br&gt;&lt;br&gt;uses apigw-jwks-priv.json&lt;br&gt;(private RSA key, kid=access, RS256)&lt;br&gt;&amp;rarr; generates / signs JWT token" vertex="1">
+          <mxGeometry height="420" width="700" x="50" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1right" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" value="ufi12 (hardware box)&lt;br&gt;&lt;br&gt;apigwd&lt;br&gt;&lt;br&gt;apigw-jwks.json resides here&lt;br&gt;(public JWKS, kid=access, RS256)&lt;br&gt;&amp;rarr; validates token signature&lt;br&gt;valid -&amp;gt; restconf get proceeds&lt;br&gt;invalid -&amp;gt; rejected" vertex="1">
+          <mxGeometry height="420" width="700" x="850" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p1e1" edge="1" parent="1" source="p1left" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" target="p1right" value="JWT token&lt;br&gt;(signed with apigw-jwks-priv.json)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="310" as="sourcePoint" />
+            <mxPoint x="850" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <UserObject label="&lt;meta charset=&quot;utf-8&quot;&gt;&lt;span style=&quot;color: rgb(26, 26, 46); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;apigw-jwks-priv.json&lt;/span&gt;" link="&lt;meta charset=&quot;utf-8&quot;&gt;&lt;span style=&quot;color: rgb(26, 26, 46); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;&quot;&gt;apigw-jwks-priv.json&lt;/span&gt;" id="kfVk_X8eZobXNfHZGYHw-1">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1">
+            <mxGeometry height="60" width="120" x="50" y="560" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="kfVk_X8eZobXNfHZGYHw-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;roundedPerimeter=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;span style=&quot;color: rgb(26, 26, 46);&quot;&gt;apigw-jwks.json&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="740" y="550" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-2" name="2-TLS">
+    <mxGraphModel dx="814" dy="556" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="#ffffff" border="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Title -->
+        <mxCell id="p2t" value="TLS" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a1a2e;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="750" y="20" width="100" height="40" as="geometry" />
+        </mxCell>
+        <!-- Left: client -->
+        <mxCell id="p2client" value="rtb-buddy (client)&lt;br&gt;&lt;br&gt;performs TLS handshake&lt;br&gt;validates server.crt&lt;br&gt;&amp;rarr; communicates over HTTPS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="50" y="150" width="500" height="350" as="geometry" />
+        </mxCell>
+        <!-- Middle: key generation -->
+        <mxCell id="p2gen" value="rtb-buddy apigw generate tls&lt;br&gt;--org rtbrick&lt;br&gt;&lt;br&gt;&amp;rarr; server.crt + server.key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="600" y="100" width="400" height="260" as="geometry" />
+        </mxCell>
+        <!-- Right: apigwd server -->
+        <mxCell id="p2server" value="apigwd (server)&lt;br&gt;&lt;br&gt;loads server.key + server.crt&lt;br&gt;serves TLS&lt;br&gt;(self-signed by default -&amp;gt;&lt;br&gt;not trusted by default)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="1050" y="150" width="500" height="350" as="geometry" />
+        </mxCell>
+        <!-- Edge: key gen -> server -->
+        <mxCell id="p2e1" value="loads server.crt / server.key" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" edge="1" source="p2gen" target="p2server" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="230" as="sourcePoint" />
+            <mxPoint x="1050" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Edge: client -> server TLS -->
+        <mxCell id="p2e2" value="TLS handshake / HTTPS&lt;br&gt;(validates server.crt)" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" edge="1" source="p2client" target="p2server" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="550" y="325" as="sourcePoint" />
+            <mxPoint x="1050" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-3" name="3-LIX1 Certificates">
+    <mxGraphModel dx="814" dy="556" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" background="#ffffff" border="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Title -->
+        <mxCell id="p3t" value="LIX1 Certificates (presentation.md example)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a1a2e;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="600" y="20" width="400" height="40" as="geometry" />
+        </mxCell>
+        <!-- Top-left: Organization CA -->
+        <mxCell id="p3orgca" value="Organization CA (rtbrick-lab)&lt;br&gt;&lt;br&gt;lix1 generate ca --cn rtbrick-lab&lt;br&gt;--org rtbrick --ou devops&lt;br&gt;&lt;br&gt;&amp;rarr; ca.crt + ca.key&lt;br&gt;signs server certificate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="50" y="100" width="520" height="300" as="geometry" />
+        </mxCell>
+        <!-- Top-middle: Server certificate -->
+        <mxCell id="p3servercert" value="Server certificate (ufi12)&lt;br&gt;&lt;br&gt;lix1 generate cert --cn ufi12&lt;br&gt;--org rtbrick --ou devops&lt;br&gt;--ca-crt ca.crt --ca-crt-key ca.key&lt;br&gt;&lt;br&gt;&amp;rarr; ufi12.crt + ufi12.key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="620" y="100" width="420" height="300" as="geometry" />
+        </mxCell>
+        <!-- Top-right: configure on ufi12 -->
+        <mxCell id="p3configure" value="configured on ufi12 (hardware box)&lt;br&gt;&lt;br&gt;rtb-buddy rbfs lix1d server certificate&lt;br&gt;--cert ufi12.crt --cert-key ufi12.key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="1090" y="100" width="460" height="300" as="geometry" />
+        </mxCell>
+        <!-- Bottom-left: Client CA -->
+        <mxCell id="p3clientca" value="Client CA&lt;br&gt;&lt;br&gt;lix1 generate ca&lt;br&gt;--ca-crt client-ca.crt --ca-crt-key client-ca.key&lt;br&gt;&lt;br&gt;&amp;rarr; client-ca.crt + client-ca.key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="50" y="460" width="520" height="300" as="geometry" />
+        </mxCell>
+        <!-- Bottom-middle: Client certificate -->
+        <mxCell id="p3clientcert" value="Client certificate (client1)&lt;br&gt;&lt;br&gt;lix1 generate cert --cn client1&lt;br&gt;--org rtbrick --ou devops&lt;br&gt;--ca-crt client-ca.crt --ca-crt-key client-ca.key&lt;br&gt;&lt;br&gt;&amp;rarr; client1.crt + client1.key" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="620" y="460" width="420" height="300" as="geometry" />
+        </mxCell>
+        <!-- Bottom-right: LIX1 ping combines everything against ufi12 -->
+        <mxCell id="p3usage" value="LIX1 ping (combines everything)&lt;br&gt;&lt;br&gt;rtb-buddy rbfs lix1d ping&lt;br&gt;--cert client1.crt --cert-key client1.key&lt;br&gt;--insecure&lt;br&gt;ufi12.q2a.u38.r1.blr.rtbrick.net&lt;br&gt;&lt;br&gt;then restconf get / put against ufi12" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontSize=12;fontColor=#1a1a2e;" vertex="1" connectable="1" parent="1">
+          <mxGeometry x="1090" y="460" width="460" height="300" as="geometry" />
+        </mxCell>
+        <!-- Edge: org CA -> server cert -->
+        <mxCell id="p3e1" value="signs" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" edge="1" source="p3orgca" target="p3servercert" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="250" as="sourcePoint" />
+            <mxPoint x="620" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Edge: server cert -> configure on ufi12 -->
+        <mxCell id="p3e2" value="configure on device" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" edge="1" source="p3servercert" target="p3configure" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="250" as="sourcePoint" />
+            <mxPoint x="1090" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Edge: client CA -> client cert -->
+        <mxCell id="p3e3" value="signs" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" edge="1" source="p3clientca" target="p3clientcert" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="610" as="sourcePoint" />
+            <mxPoint x="620" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Edge: client cert -> usage -->
+        <mxCell id="p3e4" value="used for ping / restconf" style="endArrow=classic;html=1;strokeColor=#333333;strokeWidth=2;fontSize=11;fontColor=#333333;" edge="1" source="p3clientcert" target="p3usage" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1040" y="610" as="sourcePoint" />
+            <mxPoint x="1090" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
