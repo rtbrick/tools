@@ -68,8 +68,8 @@ rtb-buddy apigw generate token | rtb-buddy apigw inspect token
 Copy rtbrick default jwks files
 ===
 ```bash +exec
-cp ../apigw-jwks-priv.json .
-cp ../apigw-jwks.json .
+cp ../rtblab/apigw-jwks-priv.json .
+cp ../rtblab/apigw-jwks.json .
 ```  
 <!-- end_slide -->
 
@@ -169,6 +169,7 @@ rtb-buddy rbfs lix1 server client-ca \
 <!-- end_slide -->
 
 LIX1 Ping  
+===
 ===
 ```bash +exec
 rtb-buddy rbfs lix1 ping \
