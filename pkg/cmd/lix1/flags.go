@@ -1,6 +1,8 @@
 package lix1
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	flagCACrt        = "ca-crt"
