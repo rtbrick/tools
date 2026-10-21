@@ -2,14 +2,15 @@ package rbfs
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/xml"
 	"fmt"
 	"io"
-	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/rtbrick/tools/pkg/httpclient"
 )
 
 // buildLix1dPingBody builds the XML PingRequest body for rbfs lix1 ping
@@ -73,34 +74,29 @@ func NewLix1PingCmd() *cobra.Command {
 			}
 
 			// Build HTTP client
-			tlsConfig := &tls.Config{
-				InsecureSkipVerify: insecure,
-			}
-			if cert != "" && certKey != "" {
-				// Load client certificate for mTLS
-				certData, err := tls.LoadX509KeyPair(cert, certKey)
-				if err != nil {
-					return fmt.Errorf("load client cert/key: %w", err)
-				}
-				tlsConfig.Certificates = append(tlsConfig.Certificates, certData)
-			}
-
-			// Parse element from path (could be hostname or include more details)
 			element := path
-			url := fmt.Sprintf("https://%s:12322/X1/NE", element)
+			baseURL, err := url.Parse("https://" + element + ":12322")
+			if err != nil {
+				return fmt.Errorf("parse base URL: %w", err)
+			}
 
-			req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+			opts := []httpclient.Option{
+				httpclient.WithClientCert(cert, certKey),
+			}
+			if insecure {
+				opts = append(opts, httpclient.WithInsecureSkipVerify())
+			}
+			hc := httpclient.NewClient(baseURL, opts...)
+
+			req, err := hc.NewRequestWithContext(cmd.Context(), "POST", "/X1/NE",
+				bytes.NewReader(body),
+				httpclient.WithHeader("Content-Type", "application/xml"),
+			)
 			if err != nil {
 				return fmt.Errorf("create request: %w", err)
 			}
-			req.Header.Set("Content-Type", "application/xml")
 
-			client := &http.Client{
-				Timeout:   30 * time.Second,
-				Transport: &http.Transport{TLSClientConfig: tlsConfig},
-			}
-
-			resp, err := client.Do(req)
+			resp, err := hc.Do(req)
 			if err != nil {
 				return fmt.Errorf("do request: %w", err)
 			}

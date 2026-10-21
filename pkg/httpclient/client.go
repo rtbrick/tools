@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"time"
@@ -53,7 +56,7 @@ func (c *HTTPClient) NewRequestWithContext(ctx context.Context, method, path str
 
 // newJSONRequestWithContext creates an HTTP request with a JSON body
 // The Content-Type and Accept headers are set to application/json
-func (c *HTTPClient) newJSONRequestWithContext(ctx context.Context, method, path string, body any, opts ...RequestOption) (*http.Request, error) {
+func (c *HTTPClient) NewJSONRequestWithContext(ctx context.Context, method, path string, body any, opts ...RequestOption) (*http.Request, error) {
 	var req *http.Request
 	var err error
 
@@ -81,6 +84,17 @@ func (c *HTTPClient) newJSONRequestWithContext(ctx context.Context, method, path
 
 	req.Header.Set(HeaderContentType, ContentTypeJSON)
 	req.Header.Set(HeaderAccept, acceptJSON+","+acceptAny)
+	if slog.Default().Enabled(ctx, slog.LevelDebug) {
+		d, err := httputil.DumpRequest(req, true)
+		if err != nil {
+			slog.Error("Error dumping request", slog.Any("err", err))
+		} else {
+			fmt.Println("*************")
+			fmt.Println("Debug request")
+			fmt.Println(string(d))
+			fmt.Println("*************")
+		}
+	}
 	return req, nil
 }
 

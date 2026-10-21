@@ -50,7 +50,7 @@ func TestNewJSONRequestWithContext(t *testing.T) {
 	baseURL, _ := url.Parse(ts.URL)
 	client := NewClient(baseURL)
 
-	req, err := client.newJSONRequestWithContext(context.Background(), "POST", "/test", map[string]string{"key": "value"})
+	req, err := client.NewJSONRequestWithContext(context.Background(), "POST", "/test", map[string]string{"key": "value"})
 	require.NoError(t, err)
 	assert.Equal(t, "application/json", req.Header.Get("Content-Type"))
 
@@ -129,6 +129,6 @@ func TestWithTimeout(t *testing.T) {
 	defer ts.Close()
 
 	baseURL, _ := url.Parse(ts.URL)
-	client := NewClient(baseURL, withTimeout(5*time.Second))
+	client := NewClient(baseURL, WithTimeout(5*time.Second))
 	assert.Equal(t, 5*time.Second, client.client.Timeout)
 }
