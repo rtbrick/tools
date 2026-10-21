@@ -25,9 +25,11 @@ func NewRootCmd(silenceErrors, silenceUsage bool) *cobra.Command {
 	cmd.SetOut(os.Stdout)
 	cmd.Version = config.VERSION
 	cmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Log level (debug, info, warn, error)")
-	cmd.RegisterFlagCompletionFunc("log-level", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	if err := cmd.RegisterFlagCompletionFunc("log-level", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{"debug", "info", "warn", "error"}, cobra.ShellCompDirectiveNoFileComp
-	})
+	}); err != nil {
+		panic(err)
+	}
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
 		var level slog.Level
 		switch logLevel {
