@@ -1,0 +1,49 @@
+=== voucher
+
+Manage vouchers and licenses.
+
+==== voucher request license
+
+Request a license from a voucher.
+
+* `--voucher` — Voucher JWT string (required)
+* `--fingerprint` — Device fingerprint (required)
+* `--role` — Device role (required)
+* `--model` — Hardware model (required)
+* `--image-id` — Image ID (optional)
+* `-o, --output-jwks` — Output path for JWKS file (only written if set)
+
+[source,sh]
+----
+# Request a license
+rtb-buddy voucher request license \
+  --voucher <jwt> \
+  --fingerprint SERIAL-123456 \
+  --role multiservice-edge \
+  --model "ufispace_S9510-28DC" \
+  --image-id my-image-id
+
+# Request a license and write JWKS to a file
+rtb-buddy voucher request license \
+  --voucher <jwt> \
+  --fingerprint SERIAL-123456 \
+  --role multiservice-edge \
+  --model "ufispace_S9510-28DC" \
+  -o jwks.json
+----
+
+==== voucher request jwks
+
+Request JWKS from a voucher.
+
+* `--voucher` — Voucher JWT string (required)
+* `-o, --output-jwks` — Output path for JWKS file (only written if set)
+
+[source,sh]
+----
+# Print JWKS to stdout
+rtb-buddy voucher request jwks --voucher <jwt>
+
+# Write JWKS to a file
+rtb-buddy voucher request jwks --voucher <jwt> -o jwks.json
+----
