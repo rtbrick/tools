@@ -39,7 +39,7 @@ func NewJWKSCmd() *cobra.Command {
 
 			client := license.NewDefaultLicenseClient(voucher, ls)
 
-			jwks, _, err := client.RequestJWKS(ctx)
+			jwks, err := client.RequestJWKS(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to request JWKS: %w", err)
 			}

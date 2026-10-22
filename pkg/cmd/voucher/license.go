@@ -49,7 +49,7 @@ func NewLicenseCmd() *cobra.Command {
 
 			client := license.NewDefaultLicenseClient(voucher, ls)
 
-			jwks, licToken, _, err := requestLicense(ctx, client, &license.VoucherNodeLicenseRequest{
+			jwks, licToken, err := requestLicense(ctx, client, &license.VoucherNodeLicenseRequest{
 				Fingerprint:     fingerprint,
 				Role:            role,
 				PlatformChipset: m.Chipset,
@@ -124,14 +124,14 @@ func NewLicenseCmd() *cobra.Command {
 	return cmd
 }
 
-func requestLicense(ctx context.Context, client *license.LicenseClient, request *license.VoucherNodeLicenseRequest) (*jose.JSONWebKeySet, string, bool, error) {
-	lic, isNew, err := client.RequestLicense(ctx, request)
+func requestLicense(ctx context.Context, client *license.LicenseClient, request *license.VoucherNodeLicenseRequest) (*jose.JSONWebKeySet, string, error) {
+	lic, err := client.RequestLicense(ctx, request)
 	if err != nil {
-		return nil, "", false, err
+		return nil, "", err
 	}
-	jwks, _, err := client.RequestJWKS(ctx)
+	jwks, err := client.RequestJWKS(ctx)
 	if err != nil {
-		return nil, "", false, err
+		return nil, "", err
 	}
-	return jwks, lic.Token, isNew, nil
+	return jwks, lic.Token, nil
 }

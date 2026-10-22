@@ -11,31 +11,22 @@ import (
 )
 
 type LicenseClient struct {
-	client      *httpclient.HTTPClient
-	voucher     string
-	license     *License
-	licenseETag string
-	jwks        *jose.JSONWebKeySet
-	jwksETag    string
+	client  *httpclient.HTTPClient
+	voucher string
 }
 
-func (c *LicenseClient) RequestLicense(ctx context.Context, request *VoucherNodeLicenseRequest) (*License, bool, error) {
+func (c *LicenseClient) RequestLicense(ctx context.Context, request *VoucherNodeLicenseRequest) (*License, error) {
 	req, err := c.client.NewJSONRequestWithContext(
 		ctx, http.MethodPost, "/api/vouchers/issue-license", request,
-		httpclient.WithIfNoneMatch(c.licenseETag),
 		httpclient.WithVoucher(c.voucher),
 	)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, false, err
-	}
-
-	if res.StatusCode == http.StatusNotModified {
-		return c.license, false, nil
+		return nil, err
 	}
 
 	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusCreated {
@@ -43,35 +34,25 @@ func (c *LicenseClient) RequestLicense(ctx context.Context, request *VoucherNode
 		d := json.NewDecoder(res.Body)
 		err = d.Decode(&license)
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
-
-		c.licenseETag = res.Header.Get(httpclient.HeaderEtag)
-		c.license = &license
-
-		return c.license, true, nil
+		return &license, nil
 	}
-
-	return nil, false, &HttpError{Message: "license request failed", StatusCode: res.StatusCode}
+	return nil, &HttpError{Message: "license request failed", StatusCode: res.StatusCode}
 }
 
-func (c *LicenseClient) RequestJWKS(ctx context.Context) (*jose.JSONWebKeySet, bool, error) {
+func (c *LicenseClient) RequestJWKS(ctx context.Context) (*jose.JSONWebKeySet, error) {
 	req, err := c.client.NewJSONRequestWithContext(
 		ctx, http.MethodGet, "/api/vouchers/certs", nil,
-		httpclient.WithIfNoneMatch(c.jwksETag),
 		httpclient.WithVoucher(c.voucher),
 	)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return nil, false, err
-	}
-
-	if res.StatusCode == http.StatusNotModified {
-		return c.jwks, false, nil
+		return nil, err
 	}
 
 	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusCreated {
@@ -79,14 +60,12 @@ func (c *LicenseClient) RequestJWKS(ctx context.Context) (*jose.JSONWebKeySet, b
 		d := json.NewDecoder(res.Body)
 		err = d.Decode(&jwks)
 		if err != nil {
-			return nil, false, err
+			return nil, err
 		}
 
-		c.jwksETag = res.Header.Get(httpclient.HeaderEtag)
-		c.jwks = &jwks
-		return c.jwks, true, nil
+		return &jwks, nil
 	}
-	return nil, false, fmt.Errorf("license JWKS request failed (%d)", res.StatusCode)
+	return nil, fmt.Errorf("license JWKS request failed (%d)", res.StatusCode)
 }
 
 type VoucherNodeLicenseRequest struct {
