@@ -46,7 +46,7 @@ func (c *LicenseClient) RequestLicense(ctx context.Context, request *VoucherNode
 			return nil, false, err
 		}
 
-		c.licenseETag = res.Header.Get("ETag")
+		c.licenseETag = res.Header.Get(httpclient.HeaderEtag)
 		c.license = &license
 
 		return c.license, true, nil
@@ -82,7 +82,7 @@ func (c *LicenseClient) RequestJWKS(ctx context.Context) (*jose.JSONWebKeySet, b
 			return nil, false, err
 		}
 
-		c.jwksETag = res.Header.Get("ETag")
+		c.jwksETag = res.Header.Get(httpclient.HeaderEtag)
 		c.jwks = &jwks
 		return c.jwks, true, nil
 	}

@@ -1,10 +1,10 @@
 === voucher
 
-Manage vouchers and licenses.
+Manages vouchers and licenses.
 
 ==== voucher request license
 
-Request a license from a voucher.
+Requests a license from a voucher.
 
 * `--voucher` — Voucher JWT string (required)
 * `--fingerprint` — Device fingerprint (required)
@@ -34,7 +34,7 @@ rtb-buddy voucher request license \
 
 ==== voucher request jwks
 
-Request JWKS from a voucher.
+Requests JWKS from a voucher.
 
 * `--voucher` — Voucher JWT string (required)
 * `-o, --output-jwks` — Output path for JWKS file (only written if set)
