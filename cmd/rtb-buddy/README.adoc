@@ -266,3 +266,4 @@ Chain verification: OK
 ----
 
 include::rbfs.adoc[]
+include::voucher.adoc[]

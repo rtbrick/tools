@@ -4,6 +4,7 @@ package httpclient
 const (
 	HeaderContentType   = "Content-Type"
 	HeaderAccept        = "Accept"
+	HeaderEtag          = "ETag"
 	headerAuthorization = "Authorization"
 	headerUserAgent     = "User-Agent"
 )
