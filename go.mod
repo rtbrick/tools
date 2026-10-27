@@ -3,6 +3,7 @@ module github.com/rtbrick/tools
 go 1.27.0
 
 require (
+	github.com/fatih/color v1.19.0
 	github.com/go-jose/go-jose/v4 v4.1.6
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/spf13/cobra v1.10.2
@@ -68,7 +69,6 @@ require (
 	github.com/denis-tingaikin/go-header v0.5.0 // indirect
 	github.com/dlclark/regexp2/v2 v2.2.1 // indirect
 	github.com/ettle/strcase v0.2.0 // indirect
-	github.com/fatih/color v1.19.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/firefart/nonamedreturns v1.0.8 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect

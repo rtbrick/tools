@@ -1,0 +1,23 @@
+name: Renovate
+
+on:
+  # Ermöglicht das manuelle Starten über das GitHub Actions UI
+  workflow_dispatch:
+  # Automatischer Zeitplan (z. B. täglich um 04:00 Uhr UTC)
+  schedule:
+    - cron: '0 4 * * *'
+
+jobs:
+  renovate:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v40.0.0
+        with:
+          configurationFile: .github/renovate-config.js
+        env:
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          LOG_LEVEL: 'info'
