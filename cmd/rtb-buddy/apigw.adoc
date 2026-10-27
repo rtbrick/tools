@@ -1,0 +1,84 @@
+= apigw
+
+APIGWD related commands.
+
+toc[]
+
+==== apigw generate jwks
+
+Generates an RSA key pair as two JWKS files.
+
+* `--priv-key` — output path for the private JWKS (default: `apigw-jwks-priv.json`)
+* `--pub-key` — output path for the public JWKS (default: `apigw-jwks.json`)
+* `--kid` — key ID for the JWKS entries (default: `access`)
+
+The private JWKS contains two entries (private key + public key, same KID).
+The public JWKS contains one entry (public key only, for distribution).
+
+[source,sh]
+----
+rtb-buddy apigw generate jwks
+rtb-buddy apigw generate jwks --kid "prod" --priv-key prod-jwks-priv.json --pub-key prod-jwks.json
+----
+
+==== apigw generate token
+
+Generates a signed JWT. The private key is read from the JWKS file.
+
+* `--priv-key` — private JWKS file path (default: `apigw-jwks-priv.json`)
+* `--kid` — key ID to select from the JWKS (empty = first key)
+* `--override-kid` — override the kid in the JWT header (default: use the JWKS entry's kid)
+* `--sub` — token subject (required)
+* `--name` — name claim (required)
+* `--preferred-username` — preferred username claim (required)
+* `--scope` — scope claim (default: `supervisor`)
+* `--iss` — issuer (default: `rtbrick`)
+* `--dur` — token duration (default: `30s`)
+[source,sh]
+----
+# Single key in JWKS — --kid not needed
+rtb-buddy apigw generate token \
+  --sub 1234567890 \
+  --name rtbrick \
+  --preferred-username rtbrick \
+  --scope supervisor
+
+# Multiple keys — select by KID
+rtb-buddy apigw generate token \
+  --kid "prod" \
+  --sub 1234567890 \
+  --name rtbrick \
+  --preferred-username rtbrick
+
+# Override the kid in the JWT header
+rtb-buddy apigw generate token \
+  --kid "access" \
+  --override-kid "rotated" \
+  --sub 1234567890 \
+  --name rtbrick \
+  --preferred-username rtbrick
+----
+
+==== apigw generate tls
+
+[source,sh]
+----
+rtb-buddy apigw generate tls --org "rtbrick"
+----
+
+==== apigw inspect token
+
+Decodes a JWT from stdin. Verifies the signature if the public JWKS is available. Reports expiration status.
+
+* `--pub-key` — public JWKS file path for signature verification (default: `apigw-jwks.json`)
+* `--override-kid` — override the kid for key lookup in the JWKS
+[source,sh]
+----
+# Verify with matching kid
+rtb-buddy apigw generate token --kid access --sub 123 --name admin --preferred-username admin \
+  | rtb-buddy apigw inspect token
+
+# Override kid for key lookup (e.g. token has kid "test", JWKS has kid "access")
+rtb-buddy apigw generate token --kid access --override-kid test --sub 123 --name admin --preferred-username admin \
+  | rtb-buddy apigw inspect token --override-kid access
+----
