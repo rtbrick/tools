@@ -1,7 +1,3 @@
-=== rbfs
-
-RBF router management commands.
-
 ==== rbfs config restconf
 
 RESTCONF operations for RBFS routers.
@@ -64,5 +60,3 @@ rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net -p rtbrick-c
 # HTTPS with JWT
 rtb-buddy rbfs config restconf put ufi29.q2c.u35.r3.nbg.rtbrick.net --auth-mode -p rtbrick-config:system -f config.json
 ----
-
-include::rbfs_lix1.adoc[]

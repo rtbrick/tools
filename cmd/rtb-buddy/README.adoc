@@ -71,199 +71,32 @@ source <(rtb-buddy completion bash)
 
 APIGWD related commands.
 
-==== apigw generate jwks
-
-Generates an RSA key pair as two JWKS files.
-
-* `--priv-key` — output path for the private JWKS (default: `apigw-jwks-priv.json`)
-* `--pub-key` — output path for the public JWKS (default: `apigw-jwks.json`)
-* `--kid` — key ID for the JWKS entries (default: `access`)
-
-The private JWKS contains two entries (private key + public key, same KID).
-The public JWKS contains one entry (public key only, for distribution).
-
-[source,sh]
-----
-rtb-buddy apigw generate jwks
-rtb-buddy apigw generate jwks --kid "prod" --priv-key prod-jwks-priv.json --pub-key prod-jwks.json
-----
-
-==== apigw generate token
-
-Generates a signed JWT. The private key is read from the JWKS file.
-
-* `--priv-key` — private JWKS file path (default: `apigw-jwks-priv.json`)
-* `--kid` — key ID to select from the JWKS (empty = first key)
-* `--override-kid` — override the kid in the JWT header (default: use the JWKS entry's kid)
-* `--sub` — token subject (required)
-* `--name` — name claim (required)
-* `--preferred-username` — preferred username claim (required)
-* `--scope` — scope claim (default: `supervisor`)
-* `--iss` — issuer (default: `rtbrick`)
-* `--dur` — token duration (default: `30s`)
-[source,sh]
-----
-# Single key in JWKS — --kid not needed
-rtb-buddy apigw generate token \
-  --sub 1234567890 \
-  --name rtbrick \
-  --preferred-username rtbrick \
-  --scope supervisor
-
-# Multiple keys — select by KID
-rtb-buddy apigw generate token \
-  --kid "prod" \
-  --sub 1234567890 \
-  --name rtbrick \
-  --preferred-username rtbrick
-
-# Override the kid in the JWT header
-rtb-buddy apigw generate token \
-  --kid "access" \
-  --override-kid "rotated" \
-  --sub 1234567890 \
-  --name rtbrick \
-  --preferred-username rtbrick
-----
-
-==== apigw generate tls
-
-[source,sh]
-----
-rtb-buddy apigw generate tls --org "rtbrick"
-----
-
-==== apigw inspect token
-
-Decodes a JWT from stdin. Verifies the signature if the public JWKS is available. Reports expiration status.
-
-* `--pub-key` — public JWKS file path for signature verification (default: `apigw-jwks.json`)
-* `--override-kid` — override the kid for key lookup in the JWKS
-[source,sh]
-----
-# Verify with matching kid
-rtb-buddy apigw generate token --kid access --sub 123 --name admin --preferred-username admin \
-  | rtb-buddy apigw inspect token
-
-# Override kid for key lookup (e.g. token has kid "test", JWKS has kid "access")
-rtb-buddy apigw generate token --kid access --override-kid test --sub 123 --name admin --preferred-username admin \
-  | rtb-buddy apigw inspect token --override-kid access
-----
+link:apigw.adoc[View APIGW command reference]
 
 === lix1
 
 LI X1 mTLS certificate management commands for Lawful Intercept.
 
-==== mTLS Setup
+link:lix1.adoc[View LI X1 command reference]
 
-LI X1 uses mutual TLS (mTLS) between ADMF (Administrative Function, the LI management system) and RBFS (network element, the network device).
+== RBFS
 
-CA:: Trust anchor — issues certificates for all components
-RBFS:: Server — presents certificate, verifies ADMF clients
-ADMF:: Client — presents certificate, verifies RBFS server
+RBF router management commands.
 
-===== Generating the CA and certificates
+=== RBFS config
 
-[source,sh]
-----
-# 1. Generate CA
-rtb-buddy lix1 generate ca --cn "LI X1 CA" --org "RtBrick" --ou "Engineering"
+RESTCONF operations for RBFS routers.
 
-# 2. Generate RBFS certificate (server)
-rtb-buddy lix1 generate cert --cn "rbfs-router-01" --org "RtBrick" --ou "Engineering" --crt rbfs.crt --crt-key rbfs.key
+link:rbfs_config.adoc[View RBFS config command reference]
 
-# 3. Generate ADMF certificate (client)
-rtb-buddy lix1 generate cert --cn "admf-prod" --org "RtBrick" --ou "Engineering" --crt admf.crt --crt-key admf.key
-----
+=== RBFS LI X1
 
-===== Deploy
+Generates RBFS LI X1 mTLS CLI `set` commands from certificates and sends PingRequest.
 
-* **RBFS**: `rbfs.crt` + `rbfs.key` + `ca.crt`
-* **ADMF**: `admf.crt` + `admf.key` + `ca.crt`
+link:rbfs_lix1.adoc[View RBFS LI X1 command reference]
 
-Both sides need `ca.crt` to verify each other's certificates.
+== Voucher
 
-The RBFS certificate is used as both server certificate (X1 requests from the ADMF) and client certificate (X1 feedback channel to the ADMF).
+Manages vouchers and licenses.
 
-==== lix1 generate ca
-
-Generates a root CA certificate and private key.
-
-* `--ca-crt` — CA certificate output path (default: `ca.crt`)
-* `--ca-crt-key` — CA private key output path (default: `ca.key`)
-* `--cn` — Common Name (required)
-* `--org` — Organization (required)
-* `--ou` — Organizational Unit (required)
-* `--duration` — Certificate validity duration (default: `87600h` / 10 years)
-
-[source,sh]
-----
-rtb-buddy lix1 generate ca --cn "RtBrick LIX1" --org "RtBrick" --ou "Engineering"
-rtb-buddy lix1 generate ca --cn "My CA" --org "My Org" --ou "Eng" --ca-crt my-ca.crt --ca-crt-key my-ca.key
-----
-
-==== lix1 generate cert
-
-Generates a certificate signed by the CA.
-
-* `--ca-crt` — CA certificate input path (default: `ca.crt`)
-* `--ca-crt-key` — CA private key input path (default: `ca.key`)
-* `--crt` — Certificate output path (required)
-* `--crt-key` — Private key output path (required)
-* `--cn` — Common Name (required)
-* `--org` — Organization (required)
-* `--ou` — Organizational Unit (required)
-* `--duration` — Certificate validity duration (default: `87600h` / 10 years)
-* `--uid` — User ID (UID) attribute added to the subject distinguished name of a client certificate
-* `--dns` — DNS name subject alternative name; repeatable or comma-separated (default: `localhost`)
-* `--ip` — IP address subject alternative name (IPv4 or IPv6); repeatable or comma-separated
-* `--x1-role` — ETSI X1 role, e.g. `ADMF` or `NE` (requires `--x1-identifier`)
-* `--x1-identifier` — ETSI X1 identifier (requires `--x1-role`)
-
-`--x1-role` and `--x1-identifier` together add the ETSI TS 103 221-1 X1 certificate binding as a URI subject alternative name: `urn:etsi:li:103221-1:cert-binding:<role>:<identifier>`.
-
-[source,sh]
-----
-rtb-buddy lix1 generate cert --cn "Test Device 1" --org "RtBrick" --ou "Testing" --crt device_test_1.crt --crt-key device_test_1.key
-rtb-buddy lix1 generate cert --cn "ADMF" --org "RtBrick" --ou "Engineering" --crt admf.crt --crt-key admf.key
-rtb-buddy lix1 generate cert --cn "RBFS" --org "RtBrick" --ou "Engineering" --crt rbfs.crt --crt-key rbfs.key
-
-# With UID, SANs and ETSI X1 certificate binding
-rtb-buddy lix1 generate cert --cn "ADMF" --org "RtBrick" --ou "Engineering" --crt admf.crt --crt-key admf.key \
-  --uid admf-01 --dns admf.example.com --ip 192.0.2.10 --x1-role ADMF --x1-identifier admf-01
-rtb-buddy lix1 generate cert --cn "RBFS" --org "RtBrick" --ou "Engineering" --crt rbfs.crt --crt-key rbfs.key \
-  --dns ne1.example.com,ne2.example.com --ip 192.0.2.20 --ip 2001:db8::20 --x1-role NE --x1-identifier ne-01
-----
-
-==== lix1 test cert
-
-Validates the certificate and its trust chain.
-
-* `--crt` — Certificate to test (required)
-* `--ca-crt` — CA certificate for chain validation (default: `ca.crt`)
-
-[source,sh]
-----
-rtb-buddy lix1 test cert --crt device_test_1.crt
-rtb-buddy lix1 test cert --crt admf.crt --ca-crt ca.crt
-----
-
-.Example output:
-[source]
-----
-Subject: CN=Test Device 1,OU=Testing,O=RtBrick
-Issuer: CN=RtBrick LIX1,OU=Engineering,O=RtBrick
-Serial: 1658
-Signature Algorithm: SHA256-RSA
-Not Before: 2026-09-16T17:11:06Z
-Not After: 2036-09-13T17:11:06Z
-Is CA: false
-
-Status: VALID (expires in 87600h0m0s)
-
-Verifying certificate chain against CA...
-Chain verification: OK
-----
-
-include::rbfs.adoc[]
-include::voucher.adoc[]
+link:voucher.adoc[View Voucher command reference]
