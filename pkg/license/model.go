@@ -73,6 +73,7 @@ var PredefinedModels = map[string]struct {
 	"ufispace_S9600-32X":     {Chipset: "Q2C", Vendor: "ufiSpace", Manufacturer: "ufispace", Model: "S9600-32X"},
 	"ufispace_S9600-72XC":    {Chipset: "Q2C", Vendor: "ufiSpace", Manufacturer: "ufispace", Model: "S9600-72XC"},
 	"ufispace_S9500-22XST":   {Chipset: "QAX", Vendor: "ufiSpace", Manufacturer: "ufispace", Model: "S9500-22XST"},
+	"ufispace_S9610-46DX":    {Chipset: "Q2CP", Vendor: "ufiSpace", Manufacturer: "ufispace", Model: "S9610-46DX"},
 }
 
 // PredefinedRoles lists the valid device roles.
