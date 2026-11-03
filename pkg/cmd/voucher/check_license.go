@@ -1,7 +1,9 @@
 package voucher
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -24,6 +26,7 @@ func NewCheckLicenseCmd() *cobra.Command {
 	var fingerprint string
 	var role string
 	var model string
+	var jsonOutput bool
 
 	cmd := &cobra.Command{
 		Use:   "license",
@@ -62,6 +65,22 @@ func NewCheckLicenseCmd() *cobra.Command {
 
 			client := license.NewDefaultLicenseClient(voucher, ls)
 
+			if jsonOutput {
+				data, err := client.ListDeviceLicensesJSON(ctx, filter)
+				if errors.Is(err, license.ErrUnauthorizedVoucher) {
+					return err
+				}
+				if err != nil {
+					return fmt.Errorf("failed to check license: %w", err)
+				}
+				var pretty bytes.Buffer
+				if err := json.Indent(&pretty, data, "", "  "); err != nil {
+					return fmt.Errorf("failed to format license status response: %w", err)
+				}
+				cmd.Println(pretty.String())
+				return nil
+			}
+
 			licenses, err := client.ListDeviceLicenses(ctx, filter)
 			if errors.Is(err, license.ErrUnauthorizedVoucher) {
 				return err
@@ -98,6 +117,7 @@ func NewCheckLicenseCmd() *cobra.Command {
 	}); err != nil {
 		panic(err)
 	}
+	cmd.Flags().BoolVar(&jsonOutput, flagJSON, false, "Print the raw license server response as pretty-printed JSON")
 
 	if err := cmd.MarkFlagRequired(flagVoucher); err != nil {
 		panic(err)

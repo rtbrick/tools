@@ -56,6 +56,7 @@ the result.
 * `--fingerprint` — Device fingerprint / serial number (required)
 * `--role` — Device role (optional)
 * `--model` — Hardware model (optional)
+* `--json` — Print the raw license server response as pretty-printed JSON (optional)
 
 If the license server rejects the voucher, e.g. because it has expired, the command fails with
 `voucher is invalid or has expired`.
@@ -73,4 +74,10 @@ rtb-buddy voucher check license \
   --fingerprint SERIAL-123456 \
   --role multiservice-edge \
   --model "ufispace_S9510-28DC"
+
+# Print the raw license server response as JSON
+rtb-buddy voucher check license \
+  --voucher <jwt> \
+  --fingerprint SERIAL-123456 \
+  --json
 ----

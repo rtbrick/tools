@@ -6,4 +6,5 @@ const (
 	flagRole        = "role"
 	flagModel       = "model"
 	flagOutput      = "output"
+	flagJSON        = "json"
 )

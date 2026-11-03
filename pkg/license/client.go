@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -46,6 +47,21 @@ func (c *LicenseClient) RequestLicense(ctx context.Context, request *VoucherNode
 // An empty result indicates that no license exists for the device. ErrUnauthorizedVoucher is returned
 // if the license server rejects the voucher.
 func (c *LicenseClient) ListDeviceLicenses(ctx context.Context, filter *DeviceLicenseFilter) ([]*DeviceLicense, error) {
+	data, err := c.ListDeviceLicensesJSON(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var licenses []*DeviceLicense
+	err = json.Unmarshal(data, &licenses)
+	if err != nil {
+		return nil, err
+	}
+	return licenses, nil
+}
+
+// ListDeviceLicensesJSON is like ListDeviceLicenses, but returns the raw JSON response of the license server.
+func (c *LicenseClient) ListDeviceLicensesJSON(ctx context.Context, filter *DeviceLicenseFilter) ([]byte, error) {
 	query := url.Values{}
 	setIfNotEmpty := func(key, value string) {
 		if value != "" {
@@ -78,13 +94,7 @@ func (c *LicenseClient) ListDeviceLicenses(ctx context.Context, filter *DeviceLi
 
 	switch res.StatusCode {
 	case http.StatusOK:
-		var licenses []*DeviceLicense
-		d := json.NewDecoder(res.Body)
-		err = d.Decode(&licenses)
-		if err != nil {
-			return nil, err
-		}
-		return licenses, nil
+		return io.ReadAll(res.Body)
 	case http.StatusUnauthorized:
 		return nil, ErrUnauthorizedVoucher
 	}
