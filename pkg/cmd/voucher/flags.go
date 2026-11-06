@@ -5,6 +5,6 @@ const (
 	flagFingerprint = "fingerprint"
 	flagRole        = "role"
 	flagModel       = "model"
-	flagImageID     = "image-id"
 	flagOutput      = "output"
+	flagJSON        = "json"
 )
