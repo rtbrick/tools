@@ -79,7 +79,7 @@ func TestCheckLicense(t *testing.T) {
 func TestCheckLicense_JSON(t *testing.T) {
 	out, err := runCheckLicense(t, func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`[{"license_id":"lic-1","status":"active","unknown_field":{"a":1}}]`))
-	}, "--fingerprint", "SERIAL-1", "--json")
+	}, "--fingerprint", "SERIAL-1", "--format", "json")
 	require.NoError(t, err)
 	assert.Equal(t, `[
   {
@@ -96,7 +96,7 @@ func TestCheckLicense_JSON(t *testing.T) {
 func TestCheckLicense_JSONNoLicense(t *testing.T) {
 	out, err := runCheckLicense(t, func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`[]`))
-	}, "--fingerprint", "SERIAL-1", "--json")
+	}, "--fingerprint", "SERIAL-1", "--format", "json")
 	require.NoError(t, err)
 	assert.Equal(t, "[]\n", out)
 }
@@ -104,7 +104,7 @@ func TestCheckLicense_JSONNoLicense(t *testing.T) {
 func TestCheckLicense_JSONUnauthorized(t *testing.T) {
 	_, err := runCheckLicense(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
-	}, "--fingerprint", "SERIAL-1", "--json")
+	}, "--fingerprint", "SERIAL-1", "--format", "json")
 	require.ErrorIs(t, err, license.ErrUnauthorizedVoucher)
 }
 
@@ -140,4 +140,19 @@ func TestCheckLicense_UnknownModel(t *testing.T) {
 		t.Error("unexpected request")
 	}, "--fingerprint", "SERIAL-1", "--model", "unknown")
 	require.ErrorContains(t, err, `unknown model "unknown"`)
+}
+
+func TestCheckLicense_TextFormat(t *testing.T) {
+	out, err := runCheckLicense(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`[]`))
+	}, "--fingerprint", "SERIAL-1", "--format", "text")
+	require.NoError(t, err)
+	assert.Contains(t, out, "No license found for device SERIAL-1")
+}
+
+func TestCheckLicense_UnknownFormat(t *testing.T) {
+	_, err := runCheckLicense(t, func(w http.ResponseWriter, r *http.Request) {
+		t.Error("unexpected request")
+	}, "--fingerprint", "SERIAL-1", "--format", "yaml")
+	require.ErrorContains(t, err, `unknown format "yaml"`)
 }

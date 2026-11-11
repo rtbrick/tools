@@ -6,5 +6,12 @@ const (
 	flagRole        = "role"
 	flagModel       = "model"
 	flagOutput      = "output"
-	flagJSON        = "json"
+	flagFormat      = "format"
 )
+
+const (
+	formatText = "text"
+	formatJSON = "json"
+)
+
+var outputFormats = []string{formatText, formatJSON}

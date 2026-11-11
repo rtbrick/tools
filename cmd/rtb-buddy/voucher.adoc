@@ -56,7 +56,7 @@ the result.
 * `--fingerprint` — Device fingerprint / serial number (required)
 * `--role` — Device role (optional)
 * `--model` — Hardware model (optional)
-* `--json` — Print the raw license server response as pretty-printed JSON (optional)
+* `--format` — Output format: `text` (default, human readable) or `json` (raw license server response as pretty-printed JSON)
 
 If the license server rejects the voucher, e.g. because it has expired, the command fails with
 `voucher is invalid or has expired`.
@@ -79,5 +79,5 @@ rtb-buddy voucher check license \
 rtb-buddy voucher check license \
   --voucher <jwt> \
   --fingerprint SERIAL-123456 \
-  --json
+  --format json
 ----

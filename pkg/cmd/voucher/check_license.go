@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"slices"
 	"time"
 
 	"github.com/fatih/color"
@@ -26,7 +27,7 @@ func NewCheckLicenseCmd() *cobra.Command {
 	var fingerprint string
 	var role string
 	var model string
-	var jsonOutput bool
+	var format string
 
 	cmd := &cobra.Command{
 		Use:   "license",
@@ -34,6 +35,10 @@ func NewCheckLicenseCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
+
+			if !slices.Contains(outputFormats, format) {
+				return fmt.Errorf("unknown format %q, must be one of %v", format, outputFormats)
+			}
 
 			filter := &license.DeviceLicenseFilter{
 				Fingerprint: fingerprint,
@@ -65,7 +70,7 @@ func NewCheckLicenseCmd() *cobra.Command {
 
 			client := license.NewDefaultLicenseClient(voucher, ls)
 
-			if jsonOutput {
+			if format == formatJSON {
 				data, err := client.ListDeviceLicensesJSON(ctx, filter)
 				if errors.Is(err, license.ErrUnauthorizedVoucher) {
 					return err
@@ -117,7 +122,12 @@ func NewCheckLicenseCmd() *cobra.Command {
 	}); err != nil {
 		panic(err)
 	}
-	cmd.Flags().BoolVar(&jsonOutput, flagJSON, false, "Print the raw license server response as pretty-printed JSON")
+	cmd.Flags().StringVar(&format, flagFormat, formatText, "Output format (text: human readable, json: raw license server response as pretty-printed JSON)")
+	if err := cmd.RegisterFlagCompletionFunc(flagFormat, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return outputFormats, cobra.ShellCompDirectiveNoFileComp
+	}); err != nil {
+		panic(err)
+	}
 
 	if err := cmd.MarkFlagRequired(flagVoucher); err != nil {
 		panic(err)
