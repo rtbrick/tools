@@ -5,6 +5,13 @@ const (
 	flagFingerprint = "fingerprint"
 	flagRole        = "role"
 	flagModel       = "model"
-	flagImageID     = "image-id"
 	flagOutput      = "output"
+	flagFormat      = "format"
 )
+
+const (
+	formatText = "text"
+	formatJSON = "json"
+)
+
+var outputFormats = []string{formatText, formatJSON}

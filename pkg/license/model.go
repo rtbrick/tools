@@ -3,6 +3,7 @@ package license
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
@@ -54,6 +55,58 @@ type LicenseCustomClaims struct {
 	VoucherUUID       string  `json:"vid,omitempty"`
 	OrganizationUUID  string  `json:"oid,omitempty"`
 	PurchaseOrderUUID string  `json:"poid,omitempty"`
+}
+
+// DeviceLicenseStatus describes the state of a device license at the time of the request.
+type DeviceLicenseStatus string
+
+const (
+	DeviceLicenseStatusActive  DeviceLicenseStatus = "active"
+	DeviceLicenseStatusPending DeviceLicenseStatus = "pending"
+	DeviceLicenseStatusExpired DeviceLicenseStatus = "expired"
+	DeviceLicenseStatusRevoked DeviceLicenseStatus = "revoked"
+)
+
+// DeviceLicense describes a license issued for a device and its current status.
+type DeviceLicense struct {
+	LicenseUUID       string              `json:"license_id"`
+	Fingerprint       string              `json:"fingerprint"`
+	Alias             *string             `json:"alias,omitempty"`
+	Status            DeviceLicenseStatus `json:"status"`
+	PurchaseOrderUUID string              `json:"purchase_order_id"`
+	PurchaseOrderName string              `json:"purchase_order_name"`
+	Product           *ProductInfo        `json:"product"`
+	Platform          *PlatformInfo       `json:"platform"`
+	Tsnotbefore       time.Time           `json:"tsnotbefore"`
+	Tsnotafter        *time.Time          `json:"tsnotafter"`
+	Tscreated         time.Time           `json:"tscreated"`
+	Tsrevoked         *time.Time          `json:"tsrevoked,omitempty"`
+}
+
+type ProductInfo struct {
+	UUID        string         `json:"product_id"`
+	Name        string         `json:"product_name"`
+	DisplayName string         `json:"display_name"`
+	ImageRole   *ImageRoleInfo `json:"image_role"`
+}
+
+type ImageRoleInfo struct {
+	ImageRoleUUID string `json:"image_role_id"`
+	Name          string `json:"image_role"`
+	DisplayName   string `json:"display_name"`
+}
+
+type PlatformInfo struct {
+	PlatformUUID    string      `json:"platform_id"`
+	PlatformModel   string      `json:"platform_model"`
+	PlatformChipset string      `json:"platform_chipset"`
+	Manufacturer    string      `json:"manufacturer"`
+	Vendor          *VendorInfo `json:"vendor"`
+}
+
+type VendorInfo struct {
+	VendorUUID string `json:"vendor_id"`
+	Name       string `json:"vendor_name"`
 }
 
 // PredefinedModels maps hardware model keys to their chipset, vendor, and manufacturer.

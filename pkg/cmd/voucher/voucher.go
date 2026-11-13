@@ -10,5 +10,6 @@ func NewVoucherCmd() *cobra.Command {
 		Short: "Manage vouchers and licenses",
 	}
 	cmd.AddCommand(NewRequestCmd())
+	cmd.AddCommand(NewCheckCmd())
 	return cmd
 }

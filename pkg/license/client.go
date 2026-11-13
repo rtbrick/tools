@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/rtbrick/tools/pkg/httpclient"
@@ -41,6 +43,64 @@ func (c *LicenseClient) RequestLicense(ctx context.Context, request *VoucherNode
 	return nil, &HttpError{Message: "license request failed", StatusCode: res.StatusCode}
 }
 
+// ListDeviceLicenses lists all licenses, including expired and revoked ones, issued for a device.
+// An empty result indicates that no license exists for the device. ErrUnauthorizedVoucher is returned
+// if the license server rejects the voucher.
+func (c *LicenseClient) ListDeviceLicenses(ctx context.Context, filter *DeviceLicenseFilter) ([]*DeviceLicense, error) {
+	data, err := c.ListDeviceLicensesJSON(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var licenses []*DeviceLicense
+	err = json.Unmarshal(data, &licenses)
+	if err != nil {
+		return nil, err
+	}
+	return licenses, nil
+}
+
+// ListDeviceLicensesJSON is like ListDeviceLicenses, but returns the raw JSON response of the license server.
+func (c *LicenseClient) ListDeviceLicensesJSON(ctx context.Context, filter *DeviceLicenseFilter) ([]byte, error) {
+	query := url.Values{}
+	setIfNotEmpty := func(key, value string) {
+		if value != "" {
+			query.Set(key, value)
+		}
+	}
+	setIfNotEmpty("role", filter.Role)
+	setIfNotEmpty("platform_chipset", filter.PlatformChipset)
+	setIfNotEmpty("platform_model", filter.PlatformModel)
+	setIfNotEmpty("manufacturer", filter.Manufacturer)
+
+	path := "/api/vouchers/licenses/" + url.PathEscape(filter.Fingerprint)
+	if len(query) > 0 {
+		path += "?" + query.Encode()
+	}
+
+	req, err := c.client.NewJSONRequestWithContext(
+		ctx, http.MethodGet, path, nil,
+		httpclient.WithVoucher(c.voucher),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	switch res.StatusCode {
+	case http.StatusOK:
+		return io.ReadAll(res.Body)
+	case http.StatusUnauthorized:
+		return nil, ErrUnauthorizedVoucher
+	}
+	return nil, &HttpError{Message: "license status request failed", StatusCode: res.StatusCode}
+}
+
 func (c *LicenseClient) RequestJWKS(ctx context.Context) (*jose.JSONWebKeySet, error) {
 	req, err := c.client.NewJSONRequestWithContext(
 		ctx, http.MethodGet, "/api/vouchers/certs", nil,
@@ -74,5 +134,13 @@ type VoucherNodeLicenseRequest struct {
 	PlatformChipset string `json:"platform_chipset"`
 	PlatformModel   string `json:"platform_model"`
 	Manufacturer    string `json:"manufacturer"`
-	ImageID         string `json:"image_id"`
+}
+
+// DeviceLicenseFilter narrows the licenses of a device. Empty values match all licenses.
+type DeviceLicenseFilter struct {
+	Fingerprint     string
+	Role            string
+	PlatformChipset string
+	PlatformModel   string
+	Manufacturer    string
 }

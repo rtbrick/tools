@@ -10,7 +10,6 @@ Requests a license from a voucher.
 * `--fingerprint` — Device fingerprint (required)
 * `--role` — Device role (required)
 * `--model` — Hardware model (required)
-* `--image-id` — Image ID (optional)
 * `-o, --output-jwks` — Output path for JWKS file (only written if set)
 
 [source,sh]
@@ -20,8 +19,7 @@ rtb-buddy voucher request license \
   --voucher <jwt> \
   --fingerprint SERIAL-123456 \
   --role multiservice-edge \
-  --model "ufispace_S9510-28DC" \
-  --image-id my-image-id
+  --model "ufispace_S9510-28DC"
 
 # Request a license and write JWKS to a file
 rtb-buddy voucher request license \
@@ -46,4 +44,40 @@ rtb-buddy voucher request jwks --voucher <jwt>
 
 # Write JWKS to a file
 rtb-buddy voucher request jwks --voucher <jwt> -o jwks.json
+----
+
+==== voucher check license
+
+Checks the license status of a device. All licenses issued for the device within the organization
+and product of the voucher are listed, including expired and revoked ones. The optional flags narrow
+the result.
+
+* `--voucher` — Voucher JWT string (required)
+* `--fingerprint` — Device fingerprint / serial number (required)
+* `--role` — Device role (optional)
+* `--model` — Hardware model (optional)
+* `--format` — Output format: `text` (default, human readable) or `json` (raw license server response as pretty-printed JSON)
+
+If the license server rejects the voucher, e.g. because it has expired, the command fails with
+`voucher is invalid or has expired`.
+
+[source,sh]
+----
+# List all licenses of a device
+rtb-buddy voucher check license \
+  --voucher <jwt> \
+  --fingerprint SERIAL-123456
+
+# Only list licenses for a given role and model
+rtb-buddy voucher check license \
+  --voucher <jwt> \
+  --fingerprint SERIAL-123456 \
+  --role multiservice-edge \
+  --model "ufispace_S9510-28DC"
+
+# Print the raw license server response as JSON
+rtb-buddy voucher check license \
+  --voucher <jwt> \
+  --fingerprint SERIAL-123456 \
+  --format json
 ----

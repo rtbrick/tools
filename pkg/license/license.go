@@ -65,4 +65,6 @@ func DecodeLicense(jwks *jose.JSONWebKeySet, license string) (*License, error) {
 var (
 	ErrMalformedLicense = errors.New("malformed license string")
 	ErrInvalidLicense   = errors.New("invalid license signature")
+	// ErrUnauthorizedVoucher indicates that the license server rejected the voucher, e.g. because it expired.
+	ErrUnauthorizedVoucher = errors.New("voucher is invalid or has expired")
 )

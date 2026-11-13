@@ -19,7 +19,6 @@ func NewLicenseCmd() *cobra.Command {
 	var fingerprint string
 	var role string
 	var model string
-	var imageID string
 
 	cmd := &cobra.Command{
 		Use:   "license",
@@ -55,7 +54,6 @@ func NewLicenseCmd() *cobra.Command {
 				PlatformChipset: m.Chipset,
 				PlatformModel:   m.Model,
 				Manufacturer:    m.Manufacturer,
-				ImageID:         imageID,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to request license: %w", err)
@@ -106,7 +104,6 @@ func NewLicenseCmd() *cobra.Command {
 	}); err != nil {
 		panic(err)
 	}
-	cmd.Flags().StringVar(&imageID, flagImageID, "", "Image ID (optional)")
 
 	if err := cmd.MarkFlagRequired(flagVoucher); err != nil {
 		panic(err)
