@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## [v0.3.0](https://github.com/rtbrick/tools/releases/tag/v0.3.0) - 2026-11-16
+
+- [`da51c78`](https://github.com/rtbrick/tools/commit/da51c78ba133c186d71cf63e7a41e9398cea104c) doc: add presentation for rtb-buddy (#13)
+- [`7b2fa87`](https://github.com/rtbrick/tools/commit/7b2fa87c41c7cdf2d090346e10b7143878d16078) feat: add check license status command (#19)
+
 ## [v0.2.0](https://github.com/rtbrick/tools/releases/tag/v0.2.0) - 2026-10-27
 
 - [`2b020d2`](https://github.com/rtbrick/tools/commit/2b020d2105a59c38e3901e098167cc7866477346) doc: fix doc
